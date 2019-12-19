@@ -1603,7 +1603,7 @@ under the License.
               </container>
               <configuration>
                 <properties>
-                  <cargo.jvmargs>-Dspring.profiles.active=wildfly,embedded
+                  <cargo.jvmargs>-Djava.net.preferIPv4Stack=true -Dspring.profiles.active=wildfly,embedded
                     -XX:+CMSClassUnloadingEnabled -XX:+UseG1GC -Xmx2048m -Xms1024m</cargo.jvmargs>
                 </properties>
               </configuration>
