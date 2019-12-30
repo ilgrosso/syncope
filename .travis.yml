@@ -77,7 +77,7 @@ jobs:
       script: travis_wait 55 mvn -f fit/core-reference/pom.xml verify -P wildfly-it -Dinvoker.streamLogs=true -Dmodernizer.skip=true -Dianal.skip=true -Drat.skip=true -Dcheckstyle.skip=true -Djacoco.skip=true
       #- stage: fit
       #name: "Full Integration Tests: Payara / H2 / JSON Content-Type"
-      #env: JAVAEE_CONTAINER=Wildfly
+      #env: JAVAEE_CONTAINER=Payara
       #env: DBMS=H2
       #env: jaxrsContentType=application/json
       #script: travis_wait 55 mvn -f fit/core-reference/pom.xml verify -P payara-it -Dinvoker.streamLogs=true -Dmodernizer.skip=true -Dianal.skip=true -Drat.skip=true -Dcheckstyle.skip=true -Djacoco.skip=true
