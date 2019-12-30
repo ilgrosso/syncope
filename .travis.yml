@@ -57,12 +57,30 @@ jobs:
       env: DBMS=H2
       env: jaxrsContentType=application/json
       script: travis_wait 55 mvn -f fit/core-reference/pom.xml verify -Dinvoker.streamLogs=true -Dmodernizer.skip=true -Dianal.skip=true -Drat.skip=true -Dcheckstyle.skip=true -Djacoco.skip=true
+      #- stage: fit
+      #name: "Full Integration Tests: Apache Tomcat / H2 / XML Content-Type"
+      #env: JAVAEE_CONTAINER=Tomcat
+      #env: DBMS=H2
+      #env: jaxrsContentType=application/xml
+      #script: travis_wait 55 mvn -f fit/core-reference/pom.xml verify -Dinvoker.streamLogs=true -Dmodernizer.skip=true -Dianal.skip=true -Drat.skip=true -Dcheckstyle.skip=true -Djacoco.skip=true
+      #- stage: fit
+      #name: "Full Integration Tests: Apache Tomcat / H2 / YAML Content-Type"
+      #env: JAVAEE_CONTAINER=Tomcat
+      #env: DBMS=H2
+      #env: jaxrsContentType=application/yaml
+      #script: travis_wait 55 mvn -f fit/core-reference/pom.xml verify -Dinvoker.streamLogs=true -Dmodernizer.skip=true -Dianal.skip=true -Drat.skip=true -Dcheckstyle.skip=true -Djacoco.skip=true
     - stage: fit
       name: "Full Integration Tests: Wildfly / H2 / JSON Content-Type"
       env: JAVAEE_CONTAINER=Wildfly
       env: DBMS=H2
       env: jaxrsContentType=application/json
       script: travis_wait 55 mvn -f fit/core-reference/pom.xml verify -P wildfly-it -Dinvoker.streamLogs=true -Dmodernizer.skip=true -Dianal.skip=true -Drat.skip=true -Dcheckstyle.skip=true -Djacoco.skip=true
+      #- stage: fit
+      #name: "Full Integration Tests: Payara / H2 / JSON Content-Type"
+      #env: JAVAEE_CONTAINER=Wildfly
+      #env: DBMS=H2
+      #env: jaxrsContentType=application/json
+      #script: travis_wait 55 mvn -f fit/core-reference/pom.xml verify -P payara-it -Dinvoker.streamLogs=true -Dmodernizer.skip=true -Dianal.skip=true -Drat.skip=true -Dcheckstyle.skip=true -Djacoco.skip=true
     - stage: fit
       name: "Full Integration Tests: Apache Tomcat / PostgreSQL / JSON Content-Type"
       env: JAVAEE_CONTAINER=Tomcat
