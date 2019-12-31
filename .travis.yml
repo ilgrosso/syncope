@@ -74,55 +74,55 @@ jobs:
       env: JAVAEE_CONTAINER=Wildfly
       env: DBMS=H2
       env: jaxrsContentType=application/json
-      script: travis_wait 55 mvn -f fit/core-reference/pom.xml verify -P wildfly-it -Dinvoker.streamLogs=true -Dmodernizer.skip=true -Dianal.skip=true -Drat.skip=true -Dcheckstyle.skip=true -Djacoco.skip=true
+      script: travis_wait 55 mvn -f fit/core-reference/pom.xml -P wildfly-it -Dinvoker.streamLogs=true -Dmodernizer.skip=true -Dianal.skip=true -Drat.skip=true -Dcheckstyle.skip=true -Djacoco.skip=true
       #- stage: fit
       #name: "Full Integration Tests: Payara / H2 / JSON Content-Type"
       #env: JAVAEE_CONTAINER=Payara
       #env: DBMS=H2
       #env: jaxrsContentType=application/json
-      #script: travis_wait 55 mvn -f fit/core-reference/pom.xml verify -P payara-it -Dinvoker.streamLogs=true -Dmodernizer.skip=true -Dianal.skip=true -Drat.skip=true -Dcheckstyle.skip=true -Djacoco.skip=true
+      #script: travis_wait 55 mvn -f fit/core-reference/pom.xml -P payara-it -Dinvoker.streamLogs=true -Dmodernizer.skip=true -Dianal.skip=true -Drat.skip=true -Dcheckstyle.skip=true -Djacoco.skip=true
     - stage: fit
       name: "Full Integration Tests: Apache Tomcat / PostgreSQL / JSON Content-Type"
       env: JAVAEE_CONTAINER=Tomcat
       env: DBMS=PostgreSQL
       env: jaxrsContentType=application/json
-      script: travis_wait 55 mvn -f fit/core-reference/pom.xml verify -P postgres-it -Dinvoker.streamLogs=true -Dmodernizer.skip=true -Dianal.skip=true -Drat.skip=true -Dcheckstyle.skip=true -Djacoco.skip=true
+      script: travis_wait 55 mvn -f fit/core-reference/pom.xml -P postgres-it -Dinvoker.streamLogs=true -Dmodernizer.skip=true -Dianal.skip=true -Drat.skip=true -Dcheckstyle.skip=true -Djacoco.skip=true
+    - stage: fit
+      name: "Full Integration Tests: Apache Tomcat / PostgreSQL (JSONB) / JSON Content-Type"
+      env: JAVAEE_CONTAINER=Tomcat
+      env: DBMS=PostgreSQL
+      env: jaxrsContentType=application/json
+      script: travis_wait 55 mvn -f fit/core-reference/pom.xml -P pgjsonb-it -Dinvoker.streamLogs=true -Dmodernizer.skip=true -Dianal.skip=true -Drat.skip=true -Dcheckstyle.skip=true -Djacoco.skip=true
     - stage: fit
       name: "Full Integration Tests: Apache Tomcat / MySQL / JSON Content-Type"
       env: JAVAEE_CONTAINER=Tomcat
       env: DBMS=MySQL
       env: jaxrsContentType=application/json
-      script: travis_wait 55 mvn -f fit/core-reference/pom.xml verify -P mysql-it -Dinvoker.streamLogs=true -Dmodernizer.skip=true -Dianal.skip=true -Drat.skip=true -Dcheckstyle.skip=true -Djacoco.skip=true
+      script: travis_wait 55 mvn -f fit/core-reference/pom.xml -P mysql-it -Dinvoker.streamLogs=true -Dmodernizer.skip=true -Dianal.skip=true -Drat.skip=true -Dcheckstyle.skip=true -Djacoco.skip=true
+    - stage: fit
+      name: "Full Integration Tests: Apache Tomcat / MySQL (JSON) / JSON Content-Type"
+      env: JAVAEE_CONTAINER=Tomcat
+      env: DBMS=MySQL
+      env: jaxrsContentType=application/json
+      script: travis_wait 55 mvn -f fit/core-reference/pom.xml -P myjson-it -Dinvoker.streamLogs=true -Dmodernizer.skip=true -Dianal.skip=true -Drat.skip=true -Dcheckstyle.skip=true -Djacoco.skip=true
     - stage: fit
       name: "Full Integration Tests: Apache Tomcat / MariaDB / JSON Content-Type"
       env: JAVAEE_CONTAINER=Tomcat
       env: DBMS=MariaDB
       env: jaxrsContentType=application/json
-      script: travis_wait 55 mvn -f fit/core-reference/pom.xml verify -P mariadb-it -Dinvoker.streamLogs=true -Dmodernizer.skip=true -Dianal.skip=true -Drat.skip=true -Dcheckstyle.skip=true -Djacoco.skip=true
+      script: travis_wait 55 mvn -f fit/core-reference/pom.xml -P mariadb-it -Dinvoker.streamLogs=true -Dmodernizer.skip=true -Dianal.skip=true -Drat.skip=true -Dcheckstyle.skip=true -Djacoco.skip=true
     - stage: fit
       name: "Full Integration Tests: Apache Tomcat / H2 / JSON Content-Type + Elasticsearch"
       env: JAVAEE_CONTAINER=Tomcat
       env: DBMS=H2
       env: jaxrsContentType=application/json
-      script: travis_wait 55 mvn -f fit/core-reference/pom.xml verify -P elasticsearch-it -Dinvoker.streamLogs=true -Dmodernizer.skip=true -Dianal.skip=true -Drat.skip=true -Dcheckstyle.skip=true -Djacoco.skip=true
+      script: travis_wait 55 mvn -f fit/core-reference/pom.xml -P elasticsearch-it -Dinvoker.streamLogs=true -Dmodernizer.skip=true -Dianal.skip=true -Drat.skip=true -Dcheckstyle.skip=true -Djacoco.skip=true
     - stage: fit
       name: "Full Integration Tests: Apache Tomcat / H2 / JSON Content-Type + Zookeeper"
       env: JAVAEE_CONTAINER=Tomcat
       env: DBMS=H2
       env: jaxrsContentType=application/json
-      script: travis_wait 55 mvn -f fit/core-reference/pom.xml verify -P zookeeper-it -Dinvoker.streamLogs=true -Dmodernizer.skip=true -Dianal.skip=true -Drat.skip=true -Dcheckstyle.skip=true -Djacoco.skip=true
-    - stage: fit-json
-      name: "Full Integration Tests: Apache Tomcat / PostgreSQL (JSONB) / JSON Content-Type"
-      env: JAVAEE_CONTAINER=Tomcat
-      env: DBMS=PostgreSQL
-      env: jaxrsContentType=application/json
-      script: travis_wait 55 mvn -f fit/core-reference/pom.xml verify -P pgjsonb-it -Dinvoker.streamLogs=true -Dmodernizer.skip=true -Dianal.skip=true -Drat.skip=true -Dcheckstyle.skip=true -Djacoco.skip=true
-    - stage: fit-json
-      name: "Full Integration Tests: Apache Tomcat / MySQL (JSON) / JSON Content-Type"
-      env: JAVAEE_CONTAINER=Tomcat
-      env: DBMS=MySQL
-      env: jaxrsContentType=application/json
-      script: travis_wait 55 mvn -f fit/core-reference/pom.xml verify -P myjson-it -Dinvoker.streamLogs=true -Dmodernizer.skip=true -Dianal.skip=true -Drat.skip=true -Dcheckstyle.skip=true -Djacoco.skip=true
+      script: travis_wait 55 mvn -f fit/core-reference/pom.xml -P zookeeper-it -Dinvoker.streamLogs=true -Dmodernizer.skip=true -Dianal.skip=true -Drat.skip=true -Dcheckstyle.skip=true -Djacoco.skip=true
       after_failure:
        - cat fit/core-reference/target/log/*
        - cat fit/core-reference/target/failsafe-reports/org.apache.syncope.fit.*-output.txt
