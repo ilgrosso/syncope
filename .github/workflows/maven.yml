@@ -24,7 +24,7 @@ jobs:
 
     strategy:
       matrix:
-        java: [ '11', '13', '14' ]
+        java: [ '11', '13', '14.0.0-ea' ]
         
     steps:
     - uses: actions/checkout@v1
