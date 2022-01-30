@@ -31,32 +31,32 @@ import org.apache.syncope.core.persistence.api.dao.RealmDAO;
 import org.apache.syncope.core.persistence.api.dao.UserDAO;
 import org.apache.syncope.core.persistence.api.entity.AnyUtilsFactory;
 import org.apache.syncope.core.persistence.api.entity.EntityFactory;
-import org.apache.syncope.core.persistence.jpa.dao.MyJPAJSONAnyDAO;
-import org.apache.syncope.core.persistence.jpa.dao.MyJPAJSONAnySearchDAO;
-import org.apache.syncope.core.persistence.jpa.dao.MyJPAJSONAuditConfDAO;
-import org.apache.syncope.core.persistence.jpa.dao.MyJPAJSONPlainSchemaDAO;
-import org.apache.syncope.core.persistence.jpa.entity.MyJPAJSONEntityFactory;
+import org.apache.syncope.core.persistence.jpa.dao.MaJPAJSONAnyDAO;
+import org.apache.syncope.core.persistence.jpa.dao.MaJPAJSONAnySearchDAO;
+import org.apache.syncope.core.persistence.jpa.dao.MaJPAJSONAuditConfDAO;
+import org.apache.syncope.core.persistence.jpa.dao.MaJPAJSONPlainSchemaDAO;
+import org.apache.syncope.core.persistence.jpa.entity.MaJPAJSONEntityFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Lazy;
 
-@ConditionalOnExpression("#{'${provisioning.quartz.sql}' matches '.*mysql.*'}")
-public class MyJPAJSONPersistenceContext extends JPAJSONPersistenceContext {
+@ConditionalOnExpression("#{'${provisioning.quartz.sql}' matches '.*mariadb.*'}")
+public class MaJPAJSONPersistenceContext extends JPAJSONPersistenceContext {
 
-    @ConditionalOnMissingBean(name = "myJPAJSONEntityFactory")
+    @ConditionalOnMissingBean(name = "maJPAJSONEntityFactory")
     @Bean
     public EntityFactory entityFactory() {
-        return new MyJPAJSONEntityFactory();
+        return new MaJPAJSONEntityFactory();
     }
 
-    @ConditionalOnMissingBean(name = "myJPAJSONAnyDAO")
+    @ConditionalOnMissingBean(name = "maJPAJSONAnyDAO")
     @Bean
     public JPAJSONAnyDAO anyDAO(final @Lazy PlainSchemaDAO plainSchemaDAO) {
-        return new MyJPAJSONAnyDAO(plainSchemaDAO);
+        return new MaJPAJSONAnyDAO(plainSchemaDAO);
     }
 
-    @ConditionalOnMissingBean(name = "myJPAJSONAnySearchDAO")
+    @ConditionalOnMissingBean(name = "maJPAJSONAnySearchDAO")
     @Bean
     public AnySearchDAO anySearchDAO(
             final @Lazy RealmDAO realmDAO,
@@ -68,7 +68,7 @@ public class MyJPAJSONPersistenceContext extends JPAJSONPersistenceContext {
             final @Lazy EntityFactory entityFactory,
             final AnyUtilsFactory anyUtilsFactory) {
 
-        return new MyJPAJSONAnySearchDAO(
+        return new MaJPAJSONAnySearchDAO(
                 realmDAO,
                 dynRealmDAO,
                 userDAO,
@@ -79,19 +79,19 @@ public class MyJPAJSONPersistenceContext extends JPAJSONPersistenceContext {
                 anyUtilsFactory);
     }
 
-    @ConditionalOnMissingBean(name = "myJPAJSONAuditConfDAO")
+    @ConditionalOnMissingBean(name = "maJPAJSONAuditConfDAO")
     @Bean
     public AuditConfDAO auditConfDAO() {
-        return new MyJPAJSONAuditConfDAO();
+        return new MaJPAJSONAuditConfDAO();
     }
 
-    @ConditionalOnMissingBean(name = "myJPAJSONPlainSchemaDAO")
+    @ConditionalOnMissingBean(name = "maJPAJSONPlainSchemaDAO")
     @Bean
     public PlainSchemaDAO plainSchemaDAO(
             final AnyUtilsFactory anyUtilsFactory,
             final @Lazy PlainAttrDAO plainAttrDAO,
             final @Lazy ExternalResourceDAO resourceDAO) {
 
-        return new MyJPAJSONPlainSchemaDAO(anyUtilsFactory, plainAttrDAO, resourceDAO);
+        return new MaJPAJSONPlainSchemaDAO(anyUtilsFactory, plainAttrDAO, resourceDAO);
     }
 }

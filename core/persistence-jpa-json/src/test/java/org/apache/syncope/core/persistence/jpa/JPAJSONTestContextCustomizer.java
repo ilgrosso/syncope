@@ -41,18 +41,31 @@ public class JPAJSONTestContextCustomizer implements ContextCustomizer {
 
     @Override
     public void customizeContext(final ConfigurableApplicationContext ctx, final MergedContextConfiguration cfg) {
-        if ("pgjsonb".equals(System.getProperty("profileId"))) {
-            TestPropertySourceUtils.addInlinedPropertiesToEnvironment(
-                    ctx,
-                    "provisioning.quartz.delegate=org.quartz.impl.jdbcjobstore.PostgreSQLDelegate");
-        } else if ("myjson".equals(System.getProperty("profileId"))) {
-            TestPropertySourceUtils.addInlinedPropertiesToEnvironment(
-                    ctx,
-                    "provisioning.quartz.delegate=org.quartz.impl.jdbcjobstore.StdJDBCDelegate");
+        switch (System.getProperty("profileId")) {
+            case "pgjsonb":
+                TestPropertySourceUtils.addInlinedPropertiesToEnvironment(
+                        ctx,
+                        "provisioning.quartz.sql=tables_postgres.sql");
+                break;
+
+            case "myjson":
+                TestPropertySourceUtils.addInlinedPropertiesToEnvironment(
+                        ctx,
+                        "provisioning.quartz.sql=tables_mysql_innodb.sql");
+                break;
+
+            case "majson":
+                TestPropertySourceUtils.addInlinedPropertiesToEnvironment(
+                        ctx,
+                        "provisioning.quartz.sql=tables_mariadb.sql");
+                break;
+
+            default:
         }
 
         AnnotatedBeanDefinitionReader reader = new AnnotatedBeanDefinitionReader(getBeanDefinitionRegistry(ctx));
         reader.registerBean(PGJPAJSONPersistenceContext.class, "PGJPAJSONPersistenceContext");
         reader.registerBean(MyJPAJSONPersistenceContext.class, "MyJPAJSONPersistenceContext");
+        reader.registerBean(MaJPAJSONPersistenceContext.class, "MaJPAJSONPersistenceContext");
     }
 }

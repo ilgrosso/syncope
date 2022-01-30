@@ -41,7 +41,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Lazy;
 
-@ConditionalOnExpression("#{'${provisioning.quartz.delegate}' matches '.*PostgreSQLDelegate.*'}")
+@ConditionalOnExpression("#{'${provisioning.quartz.sql}' matches '.*postgres.*'}")
 public class PGJPAJSONPersistenceContext extends JPAJSONPersistenceContext {
 
     @ConditionalOnMissingBean(name = "pgJPAJSONEntityFactory")
