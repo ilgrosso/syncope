@@ -405,7 +405,7 @@ under the License.
 
     <cxf.version>3.5.0</cxf.version>
     <bouncycastle.version>1.70</bouncycastle.version>
-    <nimbus-jose-jwt.version>9.16.1</nimbus-jose-jwt.version>
+    <nimbus-jose-jwt.version>9.17</nimbus-jose-jwt.version>
 
     <jackson.version>2.13.1</jackson.version>
 
@@ -422,7 +422,7 @@ under the License.
 
     <cocoon.version>3.0.0-alpha-3</cocoon.version>
 
-    <groovy.version>4.0.0-rc-2</groovy.version>
+    <groovy.version>4.0.0</groovy.version>
 
     <flowable.version>6.7.2</flowable.version>
 
