@@ -179,7 +179,7 @@ public class MaJPAJSONAnySearchDAO extends JPAAnySearchDAO {
                         append(" AND ").
                         append(lower ? "LOWER(" : "").
                         append(schema.isUniqueConstraint()
-                                ? "JSON_UNQUOTE(JSON_EXTRACT('attrUniqueValue', '$." + key + "'))"
+                                ? "attrUniqueValue ->> '$." + key + '\''
                                 : key).
                         append(lower ? ')' : "");
 
@@ -247,12 +247,7 @@ public class MaJPAJSONAnySearchDAO extends JPAAnySearchDAO {
             final List<Object> parameters,
             final SearchSupport svs) {
 
-        Pair<PlainSchema, PlainAttrValue> checked;
-        try {
-            checked = check(cond, svs.anyTypeKind);
-        } catch (IllegalArgumentException e) {
-            return EMPTY_QUERY;
-        }
+        Pair<PlainSchema, PlainAttrValue> checked = check(cond, svs.anyTypeKind);
 
         // normalize NULL / NOT NULL checks
         if (not) {
