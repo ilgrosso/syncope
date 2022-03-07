@@ -58,7 +58,7 @@ abstract class AbstractJPAJSONAnyDAO extends AbstractDAO<AbstractEntity> impleme
         this.plainSchemaDAO = plainSchemaDAO;
     }
 
-    protected abstract String queryBegin(String table);
+    protected abstract String queryBegin(String table, PlainSchema schema, boolean ignoreCaseMatch);
 
     protected abstract String attrValueMatch(
             AnyUtils anyUtils,
@@ -128,7 +128,7 @@ abstract class AbstractJPAJSONAnyDAO extends AbstractDAO<AbstractEntity> impleme
         }
 
         Query query = entityManager().createNativeQuery(
-                queryBegin(table)
+                queryBegin(table, schema, ignoreCaseMatch)
                 + "WHERE " + attrValueMatch(anyUtils, schema, attrValue, ignoreCaseMatch));
         query.setParameter(1, schema.getKey());
         query.setParameter(2, attrValue.getValue());
@@ -294,7 +294,7 @@ abstract class AbstractJPAJSONAnyDAO extends AbstractDAO<AbstractEntity> impleme
                     attrValue.setStringValue(attrValues.get(i));
 
                     bld.append('(').
-                            append(queryBegin(table)).
+                            append(queryBegin(table, schema, ignoreCaseMatch)).
                             append("WHERE ").
                             append(attrValueMatch(anyUtils, schema, attrValue, ignoreCaseMatch)).
                             append(')');

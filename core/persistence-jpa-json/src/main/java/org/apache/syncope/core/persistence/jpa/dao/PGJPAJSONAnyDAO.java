@@ -36,7 +36,7 @@ public class PGJPAJSONAnyDAO extends AbstractJPAJSONAnyDAO {
     }
 
     @Override
-    protected String queryBegin(final String table) {
+    protected String queryBegin(final String table, final PlainSchema schema, final boolean ignoreCaseMatch) {
         return "SELECT DISTINCT id FROM " + table + " u,"
                 + "jsonb_array_elements(u.plainAttrs) attrs,"
                 + "jsonb_array_elements(COALESCE(attrs -> 'values', '[{}]'::jsonb)) attrValues ";

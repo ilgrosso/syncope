@@ -58,6 +58,12 @@ public class MaJPAJSONAnySearchDAO extends JPAAnySearchDAO {
         super(realmDAO, dynRealmDAO, userDAO, groupDAO, anyObjectDAO, schemaDAO, entityFactory, anyUtilsFactory);
     }
 
+    private SearchSupport.SearchView field(final SearchSupport svs, final boolean uniqueConstraint) {
+        return uniqueConstraint
+                ? new SearchSupport.SearchView(svs.field().alias + "u", svs.field().name + "_unique")
+                : svs.field();
+    }
+
     @Override
     protected void processOBS(
             final SearchSupport svs,
@@ -67,14 +73,16 @@ public class MaJPAJSONAnySearchDAO extends JPAAnySearchDAO {
         Set<String> attrs = obs.items.stream().
                 map(item -> item.orderBy.substring(0, item.orderBy.indexOf(" "))).collect(Collectors.toSet());
 
-        obs.views.forEach(searchView -> {
-            if (searchView.name.equals(svs.field().name)) {
+        SearchSupport.SearchView view = field(svs, false);
+
+        obs.views.stream().forEach(searchView -> {
+            if (searchView.name.equals(view.name)) {
                 StringBuilder attrWhere = new StringBuilder();
                 StringBuilder nullAttrWhere = new StringBuilder();
 
-                where.append(", (SELECT * FROM ").append(searchView.name);
-
                 if (svs.nonMandatorySchemas || obs.nonMandatorySchemas) {
+                    where.append(", (SELECT * FROM ").append(searchView.name);
+
                     attrs.forEach(field -> {
                         if (attrWhere.length() == 0) {
                             attrWhere.append(" WHERE ");
@@ -84,27 +92,26 @@ public class MaJPAJSONAnySearchDAO extends JPAAnySearchDAO {
                         attrWhere.append("JSON_CONTAINS(plainAttrs, '[{\"schema\":\"").append(field).append("\"}]')");
 
                         nullAttrWhere.append(" UNION SELECT DISTINCT any_id,").append(svs.table().alias).append(".*, ").
-                                append('"').append(field).append('"').append(" AS plainShema, ").
+                                append('"').append(field).append('"').append(" AS plainSchema, ").
                                 append("null AS binaryValue, ").
                                 append("null AS booleanValue, ").
                                 append("null AS dateValue, ").
                                 append("null AS doubleValue, ").
                                 append("null AS longValue, ").
-                                append("null AS stringValue, ").
-                                append("null AS attrUniqueValue").
+                                append("null AS stringValue").
                                 append(" FROM ").append(svs.table().name).append(' ').append(svs.table().alias).
-                                append(", ").append(svs.field().name).
+                                append(", ").append(view.name).
                                 append(" WHERE any_id=").append(svs.table().alias).append(".id").
                                 append(" AND any_id NOT IN ").
                                 append("(SELECT distinct any_id FROM ").
-                                append(svs.field().name).
+                                append(view.name).
                                 append(" WHERE ").append(svs.table().alias).append(".id=any_id AND ").
                                 append("JSON_CONTAINS(plainAttrs, '[{\"schema\":\"").append(field).append("\"}]'))");
                     });
-                    where.append(attrWhere).append(nullAttrWhere);
+                    where.append(attrWhere).append(nullAttrWhere).append(')');
+                } else {
+                    where.append(", ").append(searchView.name);
                 }
-
-                where.append(')');
             } else {
                 where.append(',').append(searchView.name);
             }
@@ -124,12 +131,12 @@ public class MaJPAJSONAnySearchDAO extends JPAAnySearchDAO {
         // keep track of involvement of non-mandatory schemas in the order by clauses
         obs.nonMandatorySchemas = !"true".equals(schema.getMandatoryCondition());
 
-        obs.views.add(svs.field());
+        SearchSupport.SearchView view = field(svs, schema.isUniqueConstraint());
+        obs.views.add(view);
 
-        item.select = svs.field().alias + '.'
-                + (schema.isUniqueConstraint() ? "attrUniqueValue" : key(schema.getType()))
-                + " AS " + fieldName;
-        item.where = "plainSchema = '" + fieldName + '\'';
+        item.select = view.alias + '.' + key(schema.getType()) + " AS " + fieldName;
+
+        item.where = view.alias + ".plainSchema = '" + fieldName + '\'';
         item.orderBy = fieldName + ' ' + clause.getDirection().name();
     }
 
@@ -143,13 +150,15 @@ public class MaJPAJSONAnySearchDAO extends JPAAnySearchDAO {
             final List<Object> parameters,
             final SearchSupport svs) {
 
+        SearchSupport.SearchView view = field(svs, schema.isUniqueConstraint());
+
         // This first branch is required for handling with not conditions given on multivalue fields (SYNCOPE-1419)
         if (not && schema.isMultivalue()
                 && !(cond instanceof AnyCond)
                 && cond.getType() != AttrCond.Type.ISNULL && cond.getType() != AttrCond.Type.ISNOTNULL) {
 
             query.append("id NOT IN (SELECT DISTINCT any_id FROM ");
-            query.append(svs.field().name).append(" WHERE ");
+            query.append(view.name).append(' ').append(view.alias).append(" WHERE ");
             fillAttrQuery(anyUtils, query, attrValue, schema, cond, false, parameters, svs);
             query.append(')');
         } else {
@@ -175,12 +184,10 @@ public class MaJPAJSONAnySearchDAO extends JPAAnySearchDAO {
                 boolean lower = (schema.getType() == AttrSchemaType.String || schema.getType() == AttrSchemaType.Enum)
                         && (cond.getType() == AttrCond.Type.IEQ || cond.getType() == AttrCond.Type.ILIKE);
 
-                query.append("plainSchema = ?").append(setParameter(parameters, cond.getSchema())).
+                query.append(view.alias).append(".plainSchema = ?").append(setParameter(parameters, cond.getSchema())).
                         append(" AND ").
                         append(lower ? "LOWER(" : "").
-                        append(schema.isUniqueConstraint()
-                                ? "attrUniqueValue ->> '$." + key + '\''
-                                : key).
+                        append(key).
                         append(lower ? ')' : "");
 
                 switch (cond.getType()) {
@@ -258,26 +265,35 @@ public class MaJPAJSONAnySearchDAO extends JPAAnySearchDAO {
             }
         }
 
-        StringBuilder query =
-                new StringBuilder("SELECT DISTINCT any_id FROM ").append(svs.field().name).append(" WHERE ");
+        StringBuilder query = new StringBuilder("SELECT DISTINCT any_id FROM ");
         switch (cond.getType()) {
             case ISNOTNULL:
-                query.append("JSON_SEARCH(plainAttrs, 'one', '").
+                query.append(svs.field().name).append(' ').append(svs.field().alias).
+                        append(" WHERE JSON_SEARCH(plainAttrs, 'one', '").
                         append(checked.getLeft().getKey()).
                         append("', NULL, '$[*].schema') IS NOT NULL");
                 break;
 
             case ISNULL:
-                query.append("JSON_SEARCH(plainAttrs, 'one', '").
+                query.append(svs.field().name).append(' ').append(svs.field().alias).
+                        append(" WHERE JSON_SEARCH(plainAttrs, 'one', '").
                         append(checked.getLeft().getKey()).
                         append("', NULL, '$[*].schema') IS NULL");
                 break;
 
             default:
+                if (!not && cond.getType() == AttrCond.Type.EQ) {
+                    query.append(svs.field().name).append(' ').append(svs.field().alias).append(" WHERE ");
+                } else {
+                    SearchSupport.SearchView view = field(svs, checked.getLeft().isUniqueConstraint());
+                    query.append(view.name).append(' ').append(view.alias).append(" WHERE ");
+                }
+
                 if (not && !(cond instanceof AnyCond) && checked.getLeft().isMultivalue()) {
                     query = new StringBuilder("SELECT DISTINCT id AS any_id FROM ").append(svs.table().name).
                             append(" WHERE ");
                 }
+
                 fillAttrQuery(anyUtilsFactory.getInstance(svs.anyTypeKind),
                         query, checked.getRight(), checked.getLeft(), cond, not, parameters, svs);
         }

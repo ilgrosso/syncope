@@ -38,7 +38,7 @@ public class MyJPAJSONAnyDAO extends AbstractJPAJSONAnyDAO {
     }
 
     @Override
-    protected String queryBegin(final String table) {
+    protected String queryBegin(final String table, final PlainSchema schema, final boolean ignoreCaseMatch) {
         String view = StringUtils.containsIgnoreCase(table, AnyTypeKind.USER.name())
                 ? "user_search"
                 : StringUtils.containsIgnoreCase(table, AnyTypeKind.GROUP.name())

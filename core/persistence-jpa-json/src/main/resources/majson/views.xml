@@ -59,9 +59,23 @@ under the License.
     dateValue BIGINT(20) PATH '$.dateValue',
     doubleValue DOUBLE PATH '$.doubleValue',
     longValue BIGINT(20) PATH '$.longValue',
-    stringValue VARCHAR(255) PATH '$.stringValue'),
-    attrUniqueValue JSON PATH '$.uniqueValue')
+    stringValue VARCHAR(255) PATH '$.stringValue'))
     ) AS attrs
+  </entry>
+  <entry key="user_search_unique">
+    CREATE VIEW user_search_unique AS
+
+    SELECT u.id as id, u.id as any_id, unique_attrs.*
+    FROM SyncopeUser u, JSON_TABLE(COALESCE(plainAttrs, '[{}]'), '$[*]' COLUMNS (
+    plainSchema VARCHAR(255) PATH '$.schema',
+    NESTED PATH '$.uniqueValue' COLUMNS (
+    binaryValue LONGBLOB PATH '$.binaryValue',
+    booleanValue INT PATH '$.booleanValue',
+    dateValue BIGINT(20) PATH '$.dateValue',
+    doubleValue DOUBLE PATH '$.doubleValue',
+    longValue BIGINT(20) PATH '$.longValue',
+    stringValue VARCHAR(255) PATH '$.stringValue'))
+    ) AS unique_attrs    
   </entry>
   <entry key="user_search_urelationship">
     CREATE VIEW user_search_urelationship AS
@@ -123,9 +137,23 @@ under the License.
     dateValue BIGINT(20) PATH '$.dateValue',
     doubleValue DOUBLE PATH '$.doubleValue',
     longValue BIGINT(20) PATH '$.longValue',
-    stringValue VARCHAR(255) PATH '$.stringValue'),
-    attrUniqueValue JSON PATH '$.uniqueValue')
+    stringValue VARCHAR(255) PATH '$.stringValue'))
     ) AS attrs
+  </entry>
+  <entry key="anyObject_search_unique">
+    CREATE VIEW anyObject_search_unique AS
+
+    SELECT a.id as id, a.id as any_id, unique_attrs.*
+    FROM AnyObject a, JSON_TABLE(COALESCE(plainAttrs, '[{}]'), '$[*]' COLUMNS (
+    plainSchema VARCHAR(255) PATH '$.schema',
+    NESTED PATH '$.uniqueValue' COLUMNS (
+    binaryValue LONGBLOB PATH '$.binaryValue',
+    booleanValue INT PATH '$.booleanValue',
+    dateValue BIGINT(20) PATH '$.dateValue',
+    doubleValue DOUBLE PATH '$.doubleValue',
+    longValue BIGINT(20) PATH '$.longValue',
+    stringValue VARCHAR(255) PATH '$.stringValue'))
+    ) AS unique_attrs    
   </entry>
   <entry key="anyObject_search_arelationship">
     CREATE VIEW anyObject_search_arelationship AS
@@ -167,9 +195,23 @@ under the License.
     dateValue BIGINT(20) PATH '$.dateValue',
     doubleValue DOUBLE PATH '$.doubleValue',
     longValue BIGINT(20) PATH '$.longValue',
-    stringValue VARCHAR(255) PATH '$.stringValue'),
-    attrUniqueValue JSON PATH '$.uniqueValue')
+    stringValue VARCHAR(255) PATH '$.stringValue'))
     ) AS attrs
+  </entry>
+  <entry key="group_search_unique">
+    CREATE VIEW group_search_unique AS
+ 
+    SELECT g.id as id, g.id as any_id, unique_attrs.*
+    FROM SyncopeGroup g, JSON_TABLE(COALESCE(plainAttrs, '[{}]'), '$[*]' COLUMNS (
+    plainSchema VARCHAR(255) PATH '$.schema',
+    NESTED PATH '$.uniqueValue' COLUMNS (
+    binaryValue LONGBLOB PATH '$.binaryValue',
+    booleanValue INT PATH '$.booleanValue',
+    dateValue BIGINT(20) PATH '$.dateValue',
+    doubleValue DOUBLE PATH '$.doubleValue',
+    longValue BIGINT(20) PATH '$.longValue',
+    stringValue VARCHAR(255) PATH '$.stringValue'))
+    ) AS unique_attrs    
   </entry>
   <entry key="group_search_resource">
     CREATE VIEW group_search_resource AS

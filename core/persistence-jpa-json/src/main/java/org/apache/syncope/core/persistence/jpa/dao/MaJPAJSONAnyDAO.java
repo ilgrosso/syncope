@@ -38,12 +38,15 @@ public class MaJPAJSONAnyDAO extends AbstractJPAJSONAnyDAO {
     }
 
     @Override
-    protected String queryBegin(final String table) {
+    protected String queryBegin(final String table, final PlainSchema schema, final boolean ignoreCaseMatch) {
         String view = StringUtils.containsIgnoreCase(table, AnyTypeKind.USER.name())
                 ? "user_search"
                 : StringUtils.containsIgnoreCase(table, AnyTypeKind.GROUP.name())
                 ? "group_search"
                 : "anyObject_search";
+        if (ignoreCaseMatch && schema.isUniqueConstraint()) {
+            view += "_unique";
+        }
         return "SELECT DISTINCT id FROM " + view + ' ';
     }
 
@@ -59,9 +62,7 @@ public class MaJPAJSONAnyDAO extends AbstractJPAJSONAnyDAO {
             return "plainSchema = ? "
                     + "AND "
                     + (schemaInfo.getRight() ? "LOWER(" : "")
-                    + (schema.isUniqueConstraint()
-                    ? "JSON_UNQUOTE(JSON_EXTRACT('attrUniqueValue', '$." + schemaInfo.getLeft() + "'))"
-                    : schemaInfo.getLeft())
+                    + schemaInfo.getLeft()
                     + (schemaInfo.getRight() ? ")" : "")
                     + " = "
                     + (schemaInfo.getRight() ? "LOWER(" : "")
