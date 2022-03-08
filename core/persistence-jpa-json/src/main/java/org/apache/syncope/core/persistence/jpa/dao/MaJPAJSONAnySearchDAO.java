@@ -76,12 +76,14 @@ public class MaJPAJSONAnySearchDAO extends JPAAnySearchDAO {
         SearchSupport.SearchView view = field(svs, false);
 
         obs.views.stream().forEach(searchView -> {
+            boolean searchViewAddedToWhere = false;
             if (searchView.name.equals(view.name)) {
                 StringBuilder attrWhere = new StringBuilder();
                 StringBuilder nullAttrWhere = new StringBuilder();
 
                 if (svs.nonMandatorySchemas || obs.nonMandatorySchemas) {
                     where.append(", (SELECT * FROM ").append(searchView.name);
+                    searchViewAddedToWhere = true;
 
                     attrs.forEach(field -> {
                         if (attrWhere.length() == 0) {
@@ -109,12 +111,12 @@ public class MaJPAJSONAnySearchDAO extends JPAAnySearchDAO {
                                 append("JSON_CONTAINS(plainAttrs, '[{\"schema\":\"").append(field).append("\"}]'))");
                     });
                     where.append(attrWhere).append(nullAttrWhere).append(')');
-                } else {
-                    where.append(", ").append(searchView.name);
                 }
-            } else {
+            }
+            if (!searchViewAddedToWhere) {
                 where.append(',').append(searchView.name);
             }
+
             where.append(' ').append(searchView.alias);
         });
     }
