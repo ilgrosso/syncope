@@ -43,5 +43,9 @@ jobs:
         restore-keys: ${{ runner.os }}-m2
     - name: Build
       run: mvn -U -T 1C -P 'skipTests,all'
+    - name: 'Unit Tests: MariaDB JPA JSON'
+      run: mvn -f core/persistence-jpa-json/pom.xml -P majson -Dinvoker.streamLogs=true -Dmodernizer.skip=true -Dianal.phase=none -Drat.skip=true -Dcheckstyle.skip=true -Djacoco.skip=true
     - name: 'Integration Tests: MariaDB'
       run: mvn -f fit/core-reference/pom.xml -P mariadb-it -Dinvoker.streamLogs=true -Dmodernizer.skip=true -Drat.skip=true -Dcheckstyle.skip=true -Djacoco.skip=true
+    - name: 'Integration Tests: MariaDB JPA JSON'
+      run: mvn -f fit/core-reference/pom.xml -P majson-it -Dinvoker.streamLogs=true -Dmodernizer.skip=true -Drat.skip=true -Dcheckstyle.skip=true -Djacoco.skip=true
