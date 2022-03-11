@@ -56,7 +56,7 @@ under the License.
     NESTED PATH '$.values[*]' COLUMNS (
     binaryValue LONGBLOB PATH '$.binaryValue',
     booleanValue INT PATH '$.booleanValue',
-    dateValue BIGINT(20) PATH '$.dateValue',
+    dateValue VARCHAR(32) PATH '$.dateValue',
     doubleValue DOUBLE PATH '$.doubleValue',
     longValue BIGINT(20) PATH '$.longValue',
     stringValue VARCHAR(255) PATH '$.stringValue'))
@@ -71,7 +71,7 @@ under the License.
     NESTED PATH '$.uniqueValue' COLUMNS (
     binaryValue LONGBLOB PATH '$.binaryValue',
     booleanValue INT PATH '$.booleanValue',
-    dateValue BIGINT(20) PATH '$.dateValue',
+    dateValue VARCHAR(32) PATH '$.dateValue',
     doubleValue DOUBLE PATH '$.doubleValue',
     longValue BIGINT(20) PATH '$.longValue',
     stringValue VARCHAR(255) PATH '$.stringValue'))
@@ -134,7 +134,7 @@ under the License.
     NESTED PATH '$.values[*]' COLUMNS (
     binaryValue LONGBLOB PATH '$.binaryValue',
     booleanValue INT PATH '$.booleanValue',
-    dateValue BIGINT(20) PATH '$.dateValue',
+    dateValue VARCHAR(32) PATH '$.dateValue',
     doubleValue DOUBLE PATH '$.doubleValue',
     longValue BIGINT(20) PATH '$.longValue',
     stringValue VARCHAR(255) PATH '$.stringValue'))
@@ -149,7 +149,7 @@ under the License.
     NESTED PATH '$.uniqueValue' COLUMNS (
     binaryValue LONGBLOB PATH '$.binaryValue',
     booleanValue INT PATH '$.booleanValue',
-    dateValue BIGINT(20) PATH '$.dateValue',
+    dateValue VARCHAR(32) PATH '$.dateValue',
     doubleValue DOUBLE PATH '$.doubleValue',
     longValue BIGINT(20) PATH '$.longValue',
     stringValue VARCHAR(255) PATH '$.stringValue'))
@@ -192,7 +192,7 @@ under the License.
     NESTED PATH '$.values[*]' COLUMNS (
     binaryValue LONGBLOB PATH '$.binaryValue',
     booleanValue INT PATH '$.booleanValue',
-    dateValue BIGINT(20) PATH '$.dateValue',
+    dateValue VARCHAR(32) PATH '$.dateValue',
     doubleValue DOUBLE PATH '$.doubleValue',
     longValue BIGINT(20) PATH '$.longValue',
     stringValue VARCHAR(255) PATH '$.stringValue'))
@@ -207,7 +207,7 @@ under the License.
     NESTED PATH '$.uniqueValue' COLUMNS (
     binaryValue LONGBLOB PATH '$.binaryValue',
     booleanValue INT PATH '$.booleanValue',
-    dateValue BIGINT(20) PATH '$.dateValue',
+    dateValue VARCHAR(32) PATH '$.dateValue',
     doubleValue DOUBLE PATH '$.doubleValue',
     longValue BIGINT(20) PATH '$.longValue',
     stringValue VARCHAR(255) PATH '$.stringValue'))
