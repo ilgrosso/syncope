@@ -56,7 +56,7 @@ import org.junit.jupiter.api.BeforeAll;
 public class OIDC4UIITCase extends AbstractUIITCase {
 
     private static void clientAppSetup(final String appName, final String baseAddress, final long appId) {
-        OIDCRPClientAppTO clientApp = clientAppService.list(ClientAppType.OIDCRP).stream().
+        OIDCRPClientAppTO clientApp = CLIENT_APP_SERVICE.list(ClientAppType.OIDCRP).stream().
                 filter(app -> appName.equals(app.getName())).
                 map(OIDCRPClientAppTO.class::cast).
                 findFirst().
@@ -67,12 +67,12 @@ public class OIDC4UIITCase extends AbstractUIITCase {
                     app.setClientId(appName);
                     app.setClientSecret(appName);
 
-                    Response response = clientAppService.create(ClientAppType.OIDCRP, app);
+                    Response response = CLIENT_APP_SERVICE.create(ClientAppType.OIDCRP, app);
                     if (response.getStatusInfo().getStatusCode() != Response.Status.CREATED.getStatusCode()) {
                         fail("Could not create OIDC Client App");
                     }
 
-                    return clientAppService.read(
+                    return CLIENT_APP_SERVICE.read(
                             ClientAppType.OIDCRP, response.getHeaderString(RESTHeaders.RESOURCE_KEY));
                 });
 
@@ -81,13 +81,14 @@ public class OIDC4UIITCase extends AbstractUIITCase {
         clientApp.setSubjectType(OIDCSubjectType.PUBLIC);
         clientApp.getRedirectUris().clear();
         clientApp.getRedirectUris().add(baseAddress + OIDCC4UIConstants.URL_CONTEXT + "/code-consumer");
-        clientApp.setAuthPolicy(getAuthPolicy().getKey());
         clientApp.setSignIdToken(true);
         clientApp.setJwtAccessToken(true);
         clientApp.setLogoutUri(baseAddress + OIDCC4UIConstants.URL_CONTEXT + "/logout");
+        clientApp.setAuthPolicy(getAuthPolicy().getKey());
+        clientApp.setAttrReleasePolicy(getAttrReleasePolicy().getKey());
 
-        clientAppService.update(ClientAppType.OIDCRP, clientApp);
-        clientAppService.pushToWA();
+        CLIENT_APP_SERVICE.update(ClientAppType.OIDCRP, clientApp);
+        CLIENT_APP_SERVICE.pushToWA();
     }
 
     private static String getAppName(final String address) {
@@ -111,7 +112,7 @@ public class OIDC4UIITCase extends AbstractUIITCase {
             final boolean createUnmatching,
             final boolean selfRegUnmatching) {
 
-        Optional<OIDCC4UIProviderTO> ops = oidcProviderService.list().stream().
+        Optional<OIDCC4UIProviderTO> ops = OIDCC4UI_PROVIDER_SERVICE.list().stream().
                 filter(op -> op.getName().equals(appName)).findFirst();
         if (ops.isEmpty()) {
             OIDCC4UIProviderTO cas = new OIDCC4UIProviderTO();
@@ -161,7 +162,7 @@ public class OIDC4UIITCase extends AbstractUIITCase {
             item.setExtAttrName("cn");
             cas.add(item);
 
-            oidcProviderService.create(cas);
+            OIDCC4UI_PROVIDER_SERVICE.create(cas);
         }
     }
 
@@ -200,6 +201,11 @@ public class OIDC4UIITCase extends AbstractUIITCase {
         // 2b. WA attribute consent screen
         if (response.getStatusLine().getStatusCode() == HttpStatus.SC_OK) {
             responseBody = EntityUtils.toString(response.getEntity());
+
+            // check attribute repository
+            assertTrue(responseBody.contains("identifier"));
+            assertTrue(responseBody.contains("[value1]"));
+
             String execution = extractWAExecution(responseBody);
 
             List<NameValuePair> form = new ArrayList<>();

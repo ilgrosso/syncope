@@ -43,6 +43,7 @@ import org.apache.syncope.core.persistence.api.dao.search.AnyCond;
 import org.apache.syncope.core.persistence.api.dao.search.AnyTypeCond;
 import org.apache.syncope.core.persistence.api.dao.search.AssignableCond;
 import org.apache.syncope.core.persistence.api.dao.search.AttrCond;
+import org.apache.syncope.core.persistence.api.dao.search.AuxClassCond;
 import org.apache.syncope.core.persistence.api.dao.search.DynRealmCond;
 import org.apache.syncope.core.persistence.api.dao.search.MemberCond;
 import org.apache.syncope.core.persistence.api.dao.search.MembershipCond;
@@ -299,6 +300,30 @@ public class PGJPAJSONAnySearchDAO extends JPAAnySearchDAO {
 
     @Override
     protected String getQuery(
+            final AuxClassCond cond,
+            final boolean not,
+            final List<Object> parameters,
+            final SearchSupport svs) {
+
+        StringBuilder query = new StringBuilder();
+
+        if (not) {
+            query.append("id NOT IN (");
+        } else {
+            query.append("id IN (");
+        }
+
+        query.append("SELECT DISTINCT any_id FROM ").
+                append(svs.auxClass().name).
+                append(" WHERE anyTypeClass_id=?").
+                append(setParameter(parameters, cond.getAuxClass())).
+                append(')');
+
+        return query.toString();
+    }
+
+    @Override
+    protected String getQuery(
             final RoleCond cond,
             final boolean not,
             final List<Object> parameters,
@@ -410,13 +435,13 @@ public class PGJPAJSONAnySearchDAO extends JPAAnySearchDAO {
         query.append("SELECT DISTINCT any_id FROM ").
                 append(svs.resource().name).
                 append(" WHERE resource_id=?").
-                append(setParameter(parameters, cond.getResourceKey()));
+                append(setParameter(parameters, cond.getResource()));
 
         if (svs.anyTypeKind == AnyTypeKind.USER || svs.anyTypeKind == AnyTypeKind.ANY_OBJECT) {
             query.append(" UNION SELECT DISTINCT any_id FROM ").
                     append(svs.groupResource().name).
                     append(" WHERE resource_id=?").
-                    append(setParameter(parameters, cond.getResourceKey()));
+                    append(setParameter(parameters, cond.getResource()));
         }
 
         query.append(')');
@@ -633,12 +658,19 @@ public class PGJPAJSONAnySearchDAO extends JPAAnySearchDAO {
     }
 
     @Override
-    protected int doCount(final Set<String> adminRealms, final SearchCond cond, final AnyTypeKind kind) {
+    protected int doCount(
+            final Realm base,
+            final boolean recursive,
+            final Set<String> adminRealms,
+            final SearchCond cond,
+            final AnyTypeKind kind) {
+
         List<Object> parameters = new ArrayList<>();
 
         SearchSupport svs = buildSearchSupport(kind);
 
-        Triple<String, Set<String>, Set<String>> filter = getAdminRealmsFilter(adminRealms, svs, parameters);
+        Triple<String, Set<String>, Set<String>> filter =
+                getAdminRealmsFilter(base, recursive, adminRealms, svs, parameters);
 
         Pair<StringBuilder, Set<String>> queryInfo =
                 getQuery(buildEffectiveCond(cond, filter.getMiddle(), filter.getRight(), kind), parameters, svs);
@@ -657,6 +689,8 @@ public class PGJPAJSONAnySearchDAO extends JPAAnySearchDAO {
     @Override
     @SuppressWarnings("unchecked")
     protected <T extends Any<?>> List<T> doSearch(
+            final Realm base,
+            final boolean recursive,
             final Set<String> adminRealms,
             final SearchCond cond,
             final int page,
@@ -669,7 +703,8 @@ public class PGJPAJSONAnySearchDAO extends JPAAnySearchDAO {
 
             SearchSupport svs = buildSearchSupport(kind);
 
-            Triple<String, Set<String>, Set<String>> filter = getAdminRealmsFilter(adminRealms, svs, parameters);
+            Triple<String, Set<String>, Set<String>> filter =
+                    getAdminRealmsFilter(base, recursive, adminRealms, svs, parameters);
 
             SearchCond effectiveCond = buildEffectiveCond(cond, filter.getMiddle(), filter.getRight(), kind);
 

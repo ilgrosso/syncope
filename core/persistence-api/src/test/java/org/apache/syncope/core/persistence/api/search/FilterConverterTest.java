@@ -27,8 +27,8 @@ import java.util.ListIterator;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.syncope.common.lib.SyncopeClientException;
-import org.apache.syncope.common.lib.search.SpecialAttr;
 import org.apache.syncope.common.lib.search.ConnObjectTOFiqlSearchConditionBuilder;
+import org.apache.syncope.common.lib.search.SpecialAttr;
 import org.apache.syncope.common.lib.types.ClientExceptionType;
 import org.identityconnectors.framework.common.objects.AttributeBuilder;
 import org.identityconnectors.framework.common.objects.filter.AndFilter;
@@ -186,6 +186,26 @@ public class FilterConverterTest {
     public void notInDynRealms() {
         try {
             FilterConverter.convert(SpecialAttr.DYNREALMS + "!=realm");
+            fail();
+        } catch (SyncopeClientException e) {
+            assertEquals(ClientExceptionType.InvalidSearchParameters, e.getType());
+        }
+    }
+
+    @Test
+    public void hasAuxClasses() {
+        try {
+            FilterConverter.convert(SpecialAttr.AUX_CLASSES + "==clazz1");
+            fail();
+        } catch (SyncopeClientException e) {
+            assertEquals(ClientExceptionType.InvalidSearchParameters, e.getType());
+        }
+    }
+
+    @Test
+    public void hasNotAuxClasses() {
+        try {
+            FilterConverter.convert(SpecialAttr.AUX_CLASSES + "!=clazz1");
             fail();
         } catch (SyncopeClientException e) {
             assertEquals(ClientExceptionType.InvalidSearchParameters, e.getType());

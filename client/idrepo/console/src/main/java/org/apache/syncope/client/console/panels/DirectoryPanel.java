@@ -25,17 +25,17 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import org.apache.syncope.client.console.PreferenceManager;
-import org.apache.syncope.client.ui.commons.Constants;
-import org.apache.syncope.client.ui.commons.DirectoryDataProvider;
 import org.apache.syncope.client.console.pages.BasePage;
-import org.apache.syncope.client.ui.commons.rest.RestClient;
-import org.apache.syncope.client.ui.commons.ajax.form.IndicatorAjaxFormComponentUpdatingBehavior;
 import org.apache.syncope.client.console.wicket.markup.html.bootstrap.dialog.BaseModal;
 import org.apache.syncope.client.console.wicket.markup.html.form.ActionLink;
 import org.apache.syncope.client.console.wicket.markup.html.form.ActionLinksTogglePanel;
 import org.apache.syncope.client.console.wicket.markup.html.form.ActionsPanel;
 import org.apache.syncope.client.console.wizards.WizardMgtPanel;
+import org.apache.syncope.client.ui.commons.Constants;
+import org.apache.syncope.client.ui.commons.DirectoryDataProvider;
+import org.apache.syncope.client.ui.commons.ajax.form.IndicatorAjaxFormComponentUpdatingBehavior;
 import org.apache.syncope.client.ui.commons.panels.WizardModalPanel;
+import org.apache.syncope.client.ui.commons.rest.RestClient;
 import org.apache.syncope.common.lib.types.IdRepoEntitlement;
 import org.apache.wicket.PageReference;
 import org.apache.wicket.ajax.AjaxRequestTarget;
@@ -184,6 +184,7 @@ public abstract class DirectoryPanel<
 
             send(DirectoryPanel.this, Broadcast.EXACT, data);
 
+            displayAttributeModal.size(Modal.Size.Default);
             modal.show(false);
         });
         displayAttributeModal.size(Modal.Size.Default);

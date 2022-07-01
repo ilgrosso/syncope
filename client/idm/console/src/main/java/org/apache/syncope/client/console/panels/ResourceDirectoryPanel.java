@@ -19,11 +19,16 @@
 package org.apache.syncope.client.console.panels;
 
 import de.agilecoders.wicket.core.markup.html.bootstrap.dialog.Modal;
+import java.io.Serializable;
+import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.syncope.client.console.SyncopeConsoleSession;
 import org.apache.syncope.client.console.audit.AuditHistoryModal;
 import org.apache.syncope.client.console.commons.IdRepoConstants;
-import org.apache.syncope.client.ui.commons.Constants;
 import org.apache.syncope.client.console.commons.ResourceDataProvider;
 import org.apache.syncope.client.console.pages.BasePage;
 import org.apache.syncope.client.console.rest.ConnectorRestClient;
@@ -35,10 +40,11 @@ import org.apache.syncope.client.console.tasks.PushTasks;
 import org.apache.syncope.client.console.wicket.markup.html.bootstrap.dialog.BaseModal;
 import org.apache.syncope.client.console.wicket.markup.html.form.ActionLink;
 import org.apache.syncope.client.console.wicket.markup.html.form.ActionsPanel;
-import org.apache.syncope.client.ui.commons.wizards.AjaxWizard;
 import org.apache.syncope.client.console.wizards.WizardMgtPanel;
 import org.apache.syncope.client.console.wizards.resources.ResourceProvisionPanel;
 import org.apache.syncope.client.console.wizards.resources.ResourceWizardBuilder;
+import org.apache.syncope.client.ui.commons.Constants;
+import org.apache.syncope.client.ui.commons.wizards.AjaxWizard;
 import org.apache.syncope.common.lib.SyncopeClientException;
 import org.apache.syncope.common.lib.to.ConnInstanceTO;
 import org.apache.syncope.common.lib.to.ResourceTO;
@@ -56,27 +62,21 @@ import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.Model;
 import org.apache.wicket.model.ResourceModel;
 import org.apache.wicket.model.StringResourceModel;
-import java.io.Serializable;
-import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
 
 public class ResourceDirectoryPanel extends
         DirectoryPanel<Serializable, Serializable, ResourceDataProvider, ResourceRestClient> {
 
     private static final long serialVersionUID = -5223129956783782225L;
 
-    private String keyword;
+    protected String keyword;
 
-    private final BaseModal<Serializable> propTaskModal;
+    protected final BaseModal<Serializable> propTaskModal;
 
-    private final BaseModal<Serializable> schedTaskModal;
+    protected final BaseModal<Serializable> schedTaskModal;
 
-    private final BaseModal<Serializable> provisionModal;
+    protected final BaseModal<Serializable> provisionModal;
 
-    private final BaseModal<Serializable> historyModal;
+    protected final BaseModal<Serializable> historyModal;
 
     protected ResourceDirectoryPanel(final String id, final ResourceDirectoryPanel.Builder builder) {
         super(id, builder);
@@ -184,8 +184,8 @@ public class ResourceDirectoryPanel extends
                         build(BaseModal.CONTENT_ID,
                                 SyncopeConsoleSession.get().
                                         owns(IdMEntitlement.RESOURCE_UPDATE, connInstance.getAdminRealm())
-                                        ? AjaxWizard.Mode.EDIT
-                                        : AjaxWizard.Mode.READONLY)));
+                                ? AjaxWizard.Mode.EDIT
+                                : AjaxWizard.Mode.READONLY)));
 
                 modal.header(new Model<>(MessageFormat.format(getString("resource.edit"), model.getObject().getKey())));
                 modal.show(true);
@@ -397,9 +397,9 @@ public class ResourceDirectoryPanel extends
 
         private static final long serialVersionUID = 213974502541311941L;
 
-        private final AjaxRequestTarget target;
+        protected final AjaxRequestTarget target;
 
-        private final String keyword;
+        protected final String keyword;
 
         public ResourceSearchEvent(final AjaxRequestTarget target, final String keyword) {
             this.target = target;
@@ -414,7 +414,7 @@ public class ResourceDirectoryPanel extends
             return keyword;
         }
     }
-    
+
     public static class Builder extends DirectoryPanel.Builder<Serializable, Serializable, ResourceRestClient> {
 
         private static final long serialVersionUID = -1391308721262593468L;

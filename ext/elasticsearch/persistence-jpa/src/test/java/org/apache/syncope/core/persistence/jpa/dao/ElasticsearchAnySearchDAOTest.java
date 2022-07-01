@@ -88,7 +88,7 @@ public class ElasticsearchAnySearchDAOTest {
     private ElasticsearchAnySearchDAO searchDAO;
 
     @Test
-    public void getAdminRealmsFilter_realm() throws IOException {
+    public void getAdminRealmsFilter4realm() throws IOException {
         // 1. mock
         Realm root = mock(Realm.class);
         when(root.getFullPath()).thenReturn(SyncopeConstants.ROOT_REALM);
@@ -99,7 +99,7 @@ public class ElasticsearchAnySearchDAOTest {
         // 2. test
         Set<String> adminRealms = Set.of(SyncopeConstants.ROOT_REALM);
         Triple<Optional<Query>, Set<String>, Set<String>> filter =
-                searchDAO.getAdminRealmsFilter(AnyTypeKind.USER, adminRealms);
+                searchDAO.getAdminRealmsFilter(realmDAO.getRoot(), true, adminRealms, AnyTypeKind.USER);
 
         assertThat(
                 new Query.Builder().disMax(QueryBuilders.disMax().queries(
@@ -112,7 +112,7 @@ public class ElasticsearchAnySearchDAOTest {
     }
 
     @Test
-    public void getAdminRealmsFilter_dynRealm() {
+    public void getAdminRealmsFilter4dynRealm() {
         // 1. mock
         DynRealm dyn = mock(DynRealm.class);
         when(dyn.getKey()).thenReturn("dyn");
@@ -122,24 +122,24 @@ public class ElasticsearchAnySearchDAOTest {
         // 2. test
         Set<String> adminRealms = Set.of("dyn");
         Triple<Optional<Query>, Set<String>, Set<String>> filter =
-                searchDAO.getAdminRealmsFilter(AnyTypeKind.USER, adminRealms);
+                searchDAO.getAdminRealmsFilter(realmDAO.getRoot(), true, adminRealms, AnyTypeKind.USER);
         assertFalse(filter.getLeft().isPresent());
         assertEquals(Set.of("dyn"), filter.getMiddle());
         assertEquals(Set.of(), filter.getRight());
     }
 
     @Test
-    public void getAdminRealmsFilter_groupOwner() {
+    public void getAdminRealmsFilter4groupOwner() {
         Set<String> adminRealms = Set.of(RealmUtils.getGroupOwnerRealm("/any", "groupKey"));
         Triple<Optional<Query>, Set<String>, Set<String>> filter =
-                searchDAO.getAdminRealmsFilter(AnyTypeKind.USER, adminRealms);
+                searchDAO.getAdminRealmsFilter(realmDAO.getRoot(), true, adminRealms, AnyTypeKind.USER);
         assertFalse(filter.getLeft().isPresent());
         assertEquals(Set.of(), filter.getMiddle());
         assertEquals(Set.of("groupKey"), filter.getRight());
     }
 
     @Test
-    public void searchRequest_groupOwner() throws IOException {
+    public void searchRequest4groupOwner() throws IOException {
         // 1. mock
         AnyUtils anyUtils = mock(AnyUtils.class);
         when(anyUtils.getField("id")).thenReturn(ReflectionUtils.findField(JPAUser.class, "id"));
@@ -164,7 +164,8 @@ public class ElasticsearchAnySearchDAOTest {
             SearchRequest request = new SearchRequest.Builder().
                     index(ElasticsearchUtils.getContextDomainName(AuthContextUtils.getDomain(), AnyTypeKind.USER)).
                     searchType(SearchType.QueryThenFetch).
-                    query(searchDAO.getQuery(adminRealms, SearchCond.getLeaf(anyCond), AnyTypeKind.USER)).
+                    query(searchDAO.getQuery(realmDAO.findByFullPath("/any"), true,
+                            adminRealms, SearchCond.getLeaf(anyCond), AnyTypeKind.USER)).
                     from(1).
                     size(10).
                     build();

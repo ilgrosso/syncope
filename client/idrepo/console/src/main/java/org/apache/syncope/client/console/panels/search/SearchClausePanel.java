@@ -35,21 +35,21 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateFormatUtils;
 import org.apache.commons.lang3.time.FastDateFormat;
 import org.apache.commons.lang3.tuple.Pair;
-import org.apache.syncope.client.ui.commons.Constants;
 import org.apache.syncope.client.console.panels.search.SearchClause.Comparator;
 import org.apache.syncope.client.console.panels.search.SearchClause.Operator;
 import org.apache.syncope.client.console.panels.search.SearchClause.Type;
 import org.apache.syncope.client.console.rest.GroupRestClient;
 import org.apache.syncope.client.console.rest.RelationshipTypeRestClient;
 import org.apache.syncope.client.console.wicket.ajax.form.IndicatorAjaxEventBehavior;
+import org.apache.syncope.client.lib.SyncopeClient;
+import org.apache.syncope.client.ui.commons.Constants;
+import org.apache.syncope.client.ui.commons.SchemaUtils;
 import org.apache.syncope.client.ui.commons.ajax.form.IndicatorAjaxFormComponentUpdatingBehavior;
+import org.apache.syncope.client.ui.commons.markup.html.form.AjaxDateTimeFieldPanel;
 import org.apache.syncope.client.ui.commons.markup.html.form.AjaxDropDownChoicePanel;
+import org.apache.syncope.client.ui.commons.markup.html.form.AjaxSpinnerFieldPanel;
 import org.apache.syncope.client.ui.commons.markup.html.form.AjaxTextFieldPanel;
 import org.apache.syncope.client.ui.commons.markup.html.form.FieldPanel;
-import org.apache.syncope.client.lib.SyncopeClient;
-import org.apache.syncope.client.ui.commons.SchemaUtils;
-import org.apache.syncope.client.ui.commons.markup.html.form.AjaxDateTimeFieldPanel;
-import org.apache.syncope.client.ui.commons.markup.html.form.AjaxSpinnerFieldPanel;
 import org.apache.syncope.common.lib.SyncopeConstants;
 import org.apache.syncope.common.lib.to.GroupTO;
 import org.apache.syncope.common.lib.to.PlainSchemaTO;
@@ -150,6 +150,8 @@ public class SearchClausePanel extends FieldPanel<SearchClause> {
 
     private final IModel<List<String>> privilegeNames;
 
+    private final IModel<List<String>> auxClassNames;
+
     private final IModel<List<String>> resourceNames;
 
     private IModel<SearchClause> clause;
@@ -183,6 +185,7 @@ public class SearchClausePanel extends FieldPanel<SearchClause> {
             final Pair<IModel<List<String>>, IModel<Integer>> groupInfo,
             final IModel<List<String>> roleNames,
             final IModel<List<String>> privilegeNames,
+            final IModel<List<String>> auxClassNames,
             final IModel<List<String>> resourceNames) {
 
         super(id, name, clause);
@@ -197,6 +200,7 @@ public class SearchClausePanel extends FieldPanel<SearchClause> {
         this.groupInfo = groupInfo;
         this.roleNames = roleNames;
         this.privilegeNames = privilegeNames;
+        this.auxClassNames = auxClassNames;
         this.resourceNames = resourceNames;
 
         searchButton = new AjaxLink<>("search") {
@@ -239,6 +243,7 @@ public class SearchClausePanel extends FieldPanel<SearchClause> {
                     case ATTRIBUTE:
                         return List.of(SearchClause.Comparator.values());
 
+                    case AUX_CLASS:
                     case ROLE_MEMBERSHIP:
                     case PRIVILEGE:
                     case GROUP_MEMBERSHIP:
@@ -291,6 +296,10 @@ public class SearchClausePanel extends FieldPanel<SearchClause> {
 
                     case PRIVILEGE:
                         return privilegeNames.getObject().stream().
+                                sorted().collect(Collectors.toList());
+
+                    case AUX_CLASS:
+                        return auxClassNames.getObject().stream().
                                 sorted().collect(Collectors.toList());
 
                     case RESOURCE:
@@ -647,6 +656,7 @@ public class SearchClausePanel extends FieldPanel<SearchClause> {
                     property.setModelObject(StringUtils.EMPTY);
                     break;
 
+                case AUX_CLASS:
                 case RESOURCE:
                     value.setEnabled(false);
                     value.setModelObject(StringUtils.EMPTY);
@@ -759,6 +769,7 @@ public class SearchClausePanel extends FieldPanel<SearchClause> {
                         }
                         break;
 
+                    case AUX_CLASS:
                     case ROLE_MEMBERSHIP:
                     case PRIVILEGE:
                     case RESOURCE:
@@ -1026,7 +1037,7 @@ public class SearchClausePanel extends FieldPanel<SearchClause> {
     public FieldPanel<SearchClause> clone() {
         SearchClausePanel panel = new SearchClausePanel(
                 getId(), name, null, required, types, customizer, anames, dnames, groupInfo,
-                roleNames, privilegeNames, resourceNames);
+                roleNames, privilegeNames, auxClassNames, resourceNames);
         panel.setReadOnly(this.isReadOnly());
         panel.setRequired(this.isRequired());
         if (searchButton.isEnabled()) {

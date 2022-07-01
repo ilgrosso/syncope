@@ -19,15 +19,15 @@
 package org.apache.syncope.core.provisioning.java.data;
 
 import java.util.stream.Collectors;
-import org.apache.syncope.common.lib.policy.AccountPolicyTO;
-import org.apache.syncope.common.lib.policy.PasswordPolicyTO;
-import org.apache.syncope.common.lib.policy.PolicyTO;
-import org.apache.syncope.common.lib.policy.PullPolicyTO;
-import org.apache.syncope.common.lib.policy.PushPolicyTO;
 import org.apache.syncope.common.lib.policy.AccessPolicyTO;
+import org.apache.syncope.common.lib.policy.AccountPolicyTO;
 import org.apache.syncope.common.lib.policy.AttrReleasePolicyTO;
 import org.apache.syncope.common.lib.policy.AuthPolicyTO;
+import org.apache.syncope.common.lib.policy.PasswordPolicyTO;
+import org.apache.syncope.common.lib.policy.PolicyTO;
 import org.apache.syncope.common.lib.policy.PropagationPolicyTO;
+import org.apache.syncope.common.lib.policy.PullPolicyTO;
+import org.apache.syncope.common.lib.policy.PushPolicyTO;
 import org.apache.syncope.core.persistence.api.dao.AnyTypeDAO;
 import org.apache.syncope.core.persistence.api.dao.ExternalResourceDAO;
 import org.apache.syncope.core.persistence.api.dao.ImplementationDAO;
@@ -148,6 +148,7 @@ public class PolicyDataBinderImpl implements PolicyDataBinder {
             PropagationPolicy propagationPolicy = PropagationPolicy.class.cast(result);
             PropagationPolicyTO propagationPolicyTO = PropagationPolicyTO.class.cast(policyTO);
 
+            propagationPolicy.setPrefetch(propagationPolicyTO.isPrefetch());
             propagationPolicy.setBackOffStrategy(propagationPolicyTO.getBackOffStrategy());
             propagationPolicy.setBackOffParams(propagationPolicyTO.getBackOffParams());
             propagationPolicy.setMaxAttempts(propagationPolicyTO.getMaxAttempts());
@@ -307,6 +308,7 @@ public class PolicyDataBinderImpl implements PolicyDataBinder {
             PropagationPolicyTO propagationPolicyTO = new PropagationPolicyTO();
             policyTO = (T) propagationPolicyTO;
 
+            propagationPolicyTO.setPrefetch(propagationPolicy.isPrefetch());
             propagationPolicyTO.setBackOffStrategy(propagationPolicy.getBackOffStrategy());
             propagationPolicyTO.setBackOffParams(propagationPolicy.getBackOffParams());
             propagationPolicyTO.setMaxAttempts(propagationPolicy.getMaxAttempts());

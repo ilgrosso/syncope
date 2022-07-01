@@ -24,6 +24,7 @@ import java.util.Set;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.syncope.common.lib.SyncopeClientException;
 import org.apache.syncope.common.lib.SyncopeConstants;
+import org.apache.syncope.common.lib.to.ProvisioningReport;
 import org.apache.syncope.common.lib.to.RealmTO;
 import org.apache.syncope.common.lib.types.AnyTypeKind;
 import org.apache.syncope.common.lib.types.AuditElements;
@@ -44,7 +45,6 @@ import org.apache.syncope.core.provisioning.api.PropagationByResource;
 import org.apache.syncope.core.provisioning.api.propagation.PropagationException;
 import org.apache.syncope.core.provisioning.api.propagation.PropagationTaskInfo;
 import org.apache.syncope.core.provisioning.api.pushpull.IgnoreProvisionException;
-import org.apache.syncope.common.lib.to.ProvisioningReport;
 import org.apache.syncope.core.provisioning.api.pushpull.PullActions;
 import org.apache.syncope.core.provisioning.api.pushpull.RealmPullResultHandler;
 import org.apache.syncope.core.provisioning.api.pushpull.SyncopePullExecutor;
@@ -558,9 +558,12 @@ public class DefaultRealmPullResultHandler
                         AnyCond keyCond = new AnyCond(AttrCond.Type.ISNOTNULL);
                         keyCond.setSchema("key");
                         SearchCond allMatchingCond = SearchCond.getLeaf(keyCond);
-                        int users = searchDAO.count(adminRealms, allMatchingCond, AnyTypeKind.USER);
-                        int groups = searchDAO.count(adminRealms, allMatchingCond, AnyTypeKind.GROUP);
-                        int anyObjects = searchDAO.count(adminRealms, allMatchingCond, AnyTypeKind.ANY_OBJECT);
+                        int users = searchDAO.count(
+                                realmDAO.getRoot(), true, adminRealms, allMatchingCond, AnyTypeKind.USER);
+                        int groups = searchDAO.count(
+                                realmDAO.getRoot(), true, adminRealms, allMatchingCond, AnyTypeKind.GROUP);
+                        int anyObjects = searchDAO.count(
+                                realmDAO.getRoot(), true, adminRealms, allMatchingCond, AnyTypeKind.ANY_OBJECT);
 
                         if (users + groups + anyObjects > 0) {
                             SyncopeClientException containedAnys = SyncopeClientException.build(

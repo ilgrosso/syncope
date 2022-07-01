@@ -25,19 +25,20 @@ import org.apache.syncope.common.lib.search.AnyObjectFiqlSearchConditionBuilder;
 import org.apache.syncope.common.lib.search.GroupFiqlSearchConditionBuilder;
 import org.apache.syncope.common.lib.search.SpecialAttr;
 import org.apache.syncope.common.lib.search.UserFiqlSearchConditionBuilder;
-import org.apache.syncope.core.persistence.api.dao.search.MembershipCond;
-import org.apache.syncope.core.persistence.api.dao.search.ResourceCond;
-import org.apache.syncope.core.persistence.api.dao.search.RoleCond;
-import org.apache.syncope.core.persistence.api.dao.search.SearchCond;
 import org.apache.syncope.core.persistence.api.dao.search.AnyCond;
 import org.apache.syncope.core.persistence.api.dao.search.AnyTypeCond;
 import org.apache.syncope.core.persistence.api.dao.search.AssignableCond;
 import org.apache.syncope.core.persistence.api.dao.search.AttrCond;
+import org.apache.syncope.core.persistence.api.dao.search.AuxClassCond;
 import org.apache.syncope.core.persistence.api.dao.search.DynRealmCond;
 import org.apache.syncope.core.persistence.api.dao.search.MemberCond;
+import org.apache.syncope.core.persistence.api.dao.search.MembershipCond;
 import org.apache.syncope.core.persistence.api.dao.search.PrivilegeCond;
 import org.apache.syncope.core.persistence.api.dao.search.RelationshipCond;
 import org.apache.syncope.core.persistence.api.dao.search.RelationshipTypeCond;
+import org.apache.syncope.core.persistence.api.dao.search.ResourceCond;
+import org.apache.syncope.core.persistence.api.dao.search.RoleCond;
+import org.apache.syncope.core.persistence.api.dao.search.SearchCond;
 import org.junit.jupiter.api.Test;
 
 public class SearchCondConverterTest {
@@ -227,12 +228,24 @@ public class SearchCondConverterTest {
     }
 
     @Test
+    public void auxClasses() {
+        String fiql = new UserFiqlSearchConditionBuilder().hasAuxClasses("clazz1").query();
+        assertEquals(SpecialAttr.AUX_CLASSES + "==clazz1", fiql);
+
+        AuxClassCond cond = new AuxClassCond();
+        cond.setAuxClass("clazz1");
+        SearchCond leaf = SearchCond.getLeaf(cond);
+
+        assertEquals(leaf, SearchCondConverter.convert(VISITOR, fiql));
+    }
+
+    @Test
     public void resources() {
         String fiql = new UserFiqlSearchConditionBuilder().hasResources("resource-ldap").query();
         assertEquals(SpecialAttr.RESOURCES + "==resource-ldap", fiql);
 
         ResourceCond resCond = new ResourceCond();
-        resCond.setResourceKey("resource-ldap");
+        resCond.setResource("resource-ldap");
         SearchCond leaf = SearchCond.getLeaf(resCond);
 
         assertEquals(leaf, SearchCondConverter.convert(VISITOR, fiql));

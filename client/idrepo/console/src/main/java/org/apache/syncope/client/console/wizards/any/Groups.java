@@ -68,6 +68,8 @@ public class Groups extends AbstractGroups {
 
     protected final ConsoleGroupsModel groupsModel;
 
+    protected AjaxPalettePanel.Builder<MembershipTO> groups;
+
     public <T extends AnyTO> Groups(final AnyWrapper<T> modelObject, final boolean templateMode) {
         super(modelObject);
         this.templateMode = templateMode;
@@ -84,6 +86,10 @@ public class Groups extends AbstractGroups {
         addDynamicGroupsContainer();
         addGroupsPanel();
         addDynamicRealmsContainer();
+    }
+
+    protected List<GroupTO> searchAssignable(final String realm, final String term) {
+        return SyncopeRestClient.searchAssignableGroups(realm, term, 1, Constants.MAX_GROUP_LIST_SIZE);
     }
 
     @Override
@@ -106,70 +112,65 @@ public class Groups extends AbstractGroups {
             dyngroupsContainer.add(new Label("dyngroups").setVisible(false));
             dyngroupsContainer.setVisible(false);
         } else {
-            AjaxPalettePanel.Builder<MembershipTO> builder = new AjaxPalettePanel.Builder<MembershipTO>().
-                    setRenderer(new IChoiceRenderer<>() {
+            groups = new AjaxPalettePanel.Builder<MembershipTO>().setRenderer(new IChoiceRenderer<>() {
 
-                        private static final long serialVersionUID = -3086661086073628855L;
+                private static final long serialVersionUID = -3086661086073628855L;
 
-                        @Override
-                        public Object getDisplayValue(final MembershipTO object) {
-                            return object.getGroupName();
-                        }
+                @Override
+                public Object getDisplayValue(final MembershipTO object) {
+                    return object.getGroupName();
+                }
 
-                        @Override
-                        public String getIdValue(final MembershipTO object, final int index) {
-                            return object.getGroupName();
-                        }
+                @Override
+                public String getIdValue(final MembershipTO object, final int index) {
+                    return object.getGroupName();
+                }
 
-                        @Override
-                        public MembershipTO getObject(
-                            final String id, final IModel<? extends List<? extends MembershipTO>> choices) {
+                @Override
+                public MembershipTO getObject(
+                        final String id, final IModel<? extends List<? extends MembershipTO>> choices) {
 
-                            return choices.getObject().stream().
-                                filter(object -> id.equalsIgnoreCase(object.getGroupName())).findAny().orElse(null);
-                        }
-                    });
+                    return choices.getObject().stream().
+                            filter(object -> id.equalsIgnoreCase(object.getGroupName())).findAny().orElse(null);
+                }
+            });
 
-            groupsContainer.add(builder.setAllowOrder(true).withFilter("*").build("groups",
-                new ListModel<>() {
+            groupsContainer.add(groups.setAllowOrder(true).withFilter("*").build("groups", new ListModel<>() {
 
-                    private static final long serialVersionUID = -2583290457773357445L;
+                private static final long serialVersionUID = -2583290457773357445L;
 
-                    @Override
-                    public List<MembershipTO> getObject() {
-                        return Groups.this.groupsModel.getMemberships();
-                    }
+                @Override
+                public List<MembershipTO> getObject() {
+                    return Groups.this.groupsModel.getMemberships();
+                }
+            }, new AjaxPalettePanel.Builder.Query<>() {
 
-                }, new AjaxPalettePanel.Builder.Query<>() {
+                private static final long serialVersionUID = -7223078772249308813L;
 
-                    private static final long serialVersionUID = -7223078772249308813L;
-
-                    @Override
-                    public List<MembershipTO> execute(final String filter) {
-                        return StringUtils.isEmpty(filter)
+                @Override
+                public List<MembershipTO> execute(final String filter) {
+                    return StringUtils.isEmpty(filter)
                             ? List.of()
                             : ("*".equals(filter)
-                            ? groupsModel.getObject()
-                            : SyncopeRestClient.searchAssignableGroups(
-                            anyTO.getRealm(), filter, 1, Constants.MAX_GROUP_LIST_SIZE)).stream().
-                            map(group -> new MembershipTO.Builder(group.getKey()).
-                                groupName(group.getName()).build()).
-                            collect(Collectors.toList());
-                    }
-                }).hideLabel().setOutputMarkupId(true));
+                                    ? groupsModel.getObject()
+                                    : searchAssignable(anyTO.getRealm(), filter)).stream().
+                                    map(group -> new MembershipTO.Builder(group.getKey()).
+                                    groupName(group.getName()).build()).
+                                    collect(Collectors.toList());
+                }
+            }).hideLabel().setOutputMarkupId(true));
 
             dyngroupsContainer.add(new AjaxPalettePanel.Builder<String>().setAllowOrder(true).build("dyngroups",
-                new ListModel<>() {
+                    new ListModel<>() {
 
-                    private static final long serialVersionUID = -2583290457773357445L;
+                private static final long serialVersionUID = -2583290457773357445L;
 
-                    @Override
-                    public List<String> getObject() {
-                        return Groups.this.groupsModel.getDynMemberships();
-                    }
-
-                }, new ListModel<>(groupsModel.getObject().stream().
-                        map(GroupTO::getName).collect(Collectors.toList()))).
+                @Override
+                public List<String> getObject() {
+                    return Groups.this.groupsModel.getDynMemberships();
+                }
+            }, new ListModel<>(groupsModel.getObject().stream().
+                            map(GroupTO::getName).collect(Collectors.toList()))).
                     hideLabel().setEnabled(false).setOutputMarkupId(true));
         }
     }
@@ -214,11 +215,7 @@ public class Groups extends AbstractGroups {
          */
         @Override
         protected void reloadObject() {
-            groupsObj = SyncopeRestClient.searchAssignableGroups(
-                    realmObj,
-                    null,
-                    1,
-                    Constants.MAX_GROUP_LIST_SIZE);
+            groupsObj = searchAssignable(realmObj, null);
         }
 
         @Override

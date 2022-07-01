@@ -34,63 +34,64 @@ import org.apache.syncope.common.lib.SyncopeClientException;
 import org.apache.syncope.common.lib.SyncopeConstants;
 import org.apache.syncope.common.lib.to.ConnObjectTO;
 import org.apache.syncope.common.lib.to.EntityTO;
+import org.apache.syncope.common.lib.to.ProvisioningReport;
 import org.apache.syncope.common.lib.to.PullTaskTO;
 import org.apache.syncope.common.lib.to.PushTaskTO;
 import org.apache.syncope.common.lib.to.ReconStatus;
+import org.apache.syncope.common.lib.types.AnyEntitlement;
 import org.apache.syncope.common.lib.types.AnyTypeKind;
 import org.apache.syncope.common.lib.types.ClientExceptionType;
+import org.apache.syncope.common.lib.types.IdMEntitlement;
+import org.apache.syncope.common.lib.types.IdRepoEntitlement;
 import org.apache.syncope.common.lib.types.MatchType;
+import org.apache.syncope.common.rest.api.beans.AbstractCSVSpec;
 import org.apache.syncope.common.rest.api.beans.CSVPullSpec;
+import org.apache.syncope.common.rest.api.beans.CSVPushSpec;
 import org.apache.syncope.core.persistence.api.dao.AnyDAO;
+import org.apache.syncope.core.persistence.api.dao.AnySearchDAO;
 import org.apache.syncope.core.persistence.api.dao.AnyTypeDAO;
+import org.apache.syncope.core.persistence.api.dao.DerSchemaDAO;
 import org.apache.syncope.core.persistence.api.dao.ExternalResourceDAO;
 import org.apache.syncope.core.persistence.api.dao.NotFoundException;
+import org.apache.syncope.core.persistence.api.dao.PlainSchemaDAO;
 import org.apache.syncope.core.persistence.api.dao.RealmDAO;
+import org.apache.syncope.core.persistence.api.dao.VirSchemaDAO;
+import org.apache.syncope.core.persistence.api.dao.search.OrderByClause;
+import org.apache.syncope.core.persistence.api.dao.search.SearchCond;
 import org.apache.syncope.core.persistence.api.entity.Any;
 import org.apache.syncope.core.persistence.api.entity.AnyType;
+import org.apache.syncope.core.persistence.api.entity.AnyUtils;
 import org.apache.syncope.core.persistence.api.entity.AnyUtilsFactory;
+import org.apache.syncope.core.persistence.api.entity.Realm;
+import org.apache.syncope.core.persistence.api.entity.VirSchema;
 import org.apache.syncope.core.persistence.api.entity.resource.ExternalResource;
 import org.apache.syncope.core.persistence.api.entity.resource.MappingItem;
 import org.apache.syncope.core.persistence.api.entity.resource.Provision;
 import org.apache.syncope.core.persistence.api.entity.user.LinkedAccount;
+import org.apache.syncope.core.provisioning.api.ConnectorManager;
 import org.apache.syncope.core.provisioning.api.MappingManager;
 import org.apache.syncope.core.provisioning.api.VirAttrHandler;
-import org.apache.syncope.common.lib.to.ProvisioningReport;
-import org.apache.syncope.common.lib.types.AnyEntitlement;
-import org.apache.syncope.common.lib.types.IdMEntitlement;
-import org.apache.syncope.common.lib.types.IdRepoEntitlement;
-import org.apache.syncope.common.rest.api.beans.AbstractCSVSpec;
-import org.apache.syncope.common.rest.api.beans.CSVPushSpec;
-import org.apache.syncope.core.persistence.api.dao.AnySearchDAO;
-import org.apache.syncope.core.persistence.api.dao.DerSchemaDAO;
-import org.apache.syncope.core.persistence.api.dao.PlainSchemaDAO;
-import org.apache.syncope.core.persistence.api.dao.VirSchemaDAO;
-import org.apache.syncope.core.persistence.api.dao.search.OrderByClause;
-import org.apache.syncope.core.persistence.api.dao.search.SearchCond;
-import org.apache.syncope.core.persistence.api.entity.AnyUtils;
-import org.apache.syncope.core.persistence.api.entity.VirSchema;
-import org.apache.syncope.core.provisioning.api.ConnectorManager;
 import org.apache.syncope.core.provisioning.api.pushpull.ConstantReconFilterBuilder;
 import org.apache.syncope.core.provisioning.api.pushpull.KeyValueReconFilterBuilder;
 import org.apache.syncope.core.provisioning.api.pushpull.ReconFilterBuilder;
 import org.apache.syncope.core.provisioning.api.pushpull.SyncopeSinglePullExecutor;
-import org.apache.syncope.core.provisioning.java.pushpull.stream.CSVStreamConnector;
 import org.apache.syncope.core.provisioning.api.pushpull.SyncopeSinglePushExecutor;
 import org.apache.syncope.core.provisioning.api.pushpull.stream.SyncopeStreamPullExecutor;
-import org.apache.syncope.core.provisioning.java.pushpull.InboundMatcher;
-import org.apache.syncope.core.provisioning.java.pushpull.OutboundMatcher;
-import org.apache.syncope.core.provisioning.java.utils.ConnObjectUtils;
-import org.apache.syncope.core.provisioning.java.utils.MappingUtils;
-import org.identityconnectors.framework.common.objects.Attribute;
-import org.identityconnectors.framework.common.objects.ConnectorObject;
 import org.apache.syncope.core.provisioning.api.pushpull.stream.SyncopeStreamPushExecutor;
 import org.apache.syncope.core.provisioning.api.utils.RealmUtils;
+import org.apache.syncope.core.provisioning.java.pushpull.InboundMatcher;
+import org.apache.syncope.core.provisioning.java.pushpull.OutboundMatcher;
 import org.apache.syncope.core.provisioning.java.pushpull.SinglePullJobDelegate;
 import org.apache.syncope.core.provisioning.java.pushpull.SinglePushJobDelegate;
+import org.apache.syncope.core.provisioning.java.pushpull.stream.CSVStreamConnector;
 import org.apache.syncope.core.provisioning.java.pushpull.stream.StreamPullJobDelegate;
 import org.apache.syncope.core.provisioning.java.pushpull.stream.StreamPushJobDelegate;
+import org.apache.syncope.core.provisioning.java.utils.ConnObjectUtils;
+import org.apache.syncope.core.provisioning.java.utils.MappingUtils;
 import org.apache.syncope.core.spring.ApplicationContextProvider;
 import org.apache.syncope.core.spring.security.AuthContextUtils;
+import org.identityconnectors.framework.common.objects.Attribute;
+import org.identityconnectors.framework.common.objects.ConnectorObject;
 import org.identityconnectors.framework.common.objects.OperationOptions;
 import org.identityconnectors.framework.common.objects.SearchResult;
 import org.identityconnectors.framework.common.objects.SyncDeltaBuilder;
@@ -100,8 +101,8 @@ import org.identityconnectors.framework.common.objects.Uid;
 import org.identityconnectors.framework.common.objects.filter.Filter;
 import org.identityconnectors.framework.spi.SearchResultsHandler;
 import org.quartz.JobExecutionException;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.beans.factory.support.AbstractBeanDefinition;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.transaction.annotation.Transactional;
 
 public class ReconciliationLogic extends AbstractTransactionalLogic<EntityTO> {
@@ -568,6 +569,9 @@ public class ReconciliationLogic extends AbstractTransactionalLogic<EntityTO> {
                 entitlement = IdRepoEntitlement.USER_SEARCH;
         }
 
+        Realm base = Optional.ofNullable(realmDAO.findByFullPath(realm)).
+                orElseThrow(() -> new NotFoundException("Realm " + realm));
+
         Set<String> adminRealms = RealmUtils.getEffective(AuthContextUtils.getAuthorizations().get(entitlement), realm);
         SearchCond effectiveCond = searchCond == null ? anyUtils.dao().getAllMatchingCond() : searchCond;
 
@@ -575,15 +579,16 @@ public class ReconciliationLogic extends AbstractTransactionalLogic<EntityTO> {
         if (spec.getIgnorePaging()) {
             matching = new ArrayList<>();
 
-            int count = anySearchDAO.count(adminRealms, effectiveCond, anyType.getKind());
+            int count = anySearchDAO.count(base, true, adminRealms, effectiveCond, anyType.getKind());
             int pages = (count / AnyDAO.DEFAULT_PAGE_SIZE) + 1;
 
             for (int p = 1; p <= pages; p++) {
-                matching.addAll(anySearchDAO.search(adminRealms, effectiveCond,
+                matching.addAll(anySearchDAO.search(base, true, adminRealms, effectiveCond,
                         p, AnyDAO.DEFAULT_PAGE_SIZE, orderBy, anyType.getKind()));
             }
         } else {
-            matching = anySearchDAO.search(adminRealms, effectiveCond, page, size, orderBy, anyType.getKind());
+            matching = anySearchDAO.search(
+                    base, true, adminRealms, effectiveCond, page, size, orderBy, anyType.getKind());
         }
 
         List<String> columns = new ArrayList<>();
@@ -627,7 +632,7 @@ public class ReconciliationLogic extends AbstractTransactionalLogic<EntityTO> {
                 csvSchema(spec),
                 null,
                 os,
-                columns.toArray(new String[columns.size()]))) {
+                columns.toArray(String[]::new))) {
 
             SyncopeStreamPushExecutor executor =
                     (SyncopeStreamPushExecutor) ApplicationContextProvider.getBeanFactory().

@@ -18,6 +18,7 @@
  */
 package org.apache.syncope.client.console.pages;
 
+import java.io.Serializable;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.syncope.client.console.panels.ResourceDirectoryPanel;
 import org.apache.syncope.client.console.wizards.WizardMgtPanel;
@@ -32,13 +33,10 @@ import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.form.Form;
 import org.apache.wicket.markup.html.panel.Panel;
 import org.apache.wicket.model.Model;
-import java.io.Serializable;
 
 public class Resources extends Panel {
 
     private static final long serialVersionUID = 7240865652350993779L;
-
-    private final WizardMgtPanel<Serializable> resourceDirectoryPanel;
 
     public Resources(final String id, final PageReference pageRef) {
         super(id);
@@ -68,13 +66,9 @@ public class Resources extends Panel {
         form.add(search);
         form.setDefaultButton(search);
 
-        resourceDirectoryPanel =
-                new ResourceDirectoryPanel.Builder(pageRef).
-                        addNewItemPanelBuilder(new ResourceWizardBuilder(
-                                new ResourceTO(), pageRef), true).
-                        build("resourceDirectoryPanel");
-        resourceDirectoryPanel.setOutputMarkupId(true);
-
-        add(resourceDirectoryPanel);
+        WizardMgtPanel<Serializable> resourceDirectoryPanel = new ResourceDirectoryPanel.Builder(pageRef).
+                addNewItemPanelBuilder(new ResourceWizardBuilder(new ResourceTO(), pageRef), true).
+                build("resourceDirectoryPanel");
+        add(resourceDirectoryPanel.setOutputMarkupId(true));
     }
 }

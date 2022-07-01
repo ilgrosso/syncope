@@ -26,26 +26,27 @@ import static org.junit.jupiter.api.Assertions.fail;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 import org.apache.syncope.common.lib.SyncopeClientException;
 import org.apache.syncope.common.lib.SyncopeConstants;
 import org.apache.syncope.common.lib.types.AnyTypeKind;
 import org.apache.syncope.common.lib.types.ClientExceptionType;
 import org.apache.syncope.common.lib.types.IdRepoEntitlement;
+import org.apache.syncope.core.persistence.api.dao.AnySearchDAO;
 import org.apache.syncope.core.persistence.api.dao.GroupDAO;
+import org.apache.syncope.core.persistence.api.dao.PlainSchemaDAO;
 import org.apache.syncope.core.persistence.api.dao.RealmDAO;
 import org.apache.syncope.core.persistence.api.dao.RoleDAO;
-import org.apache.syncope.core.persistence.api.dao.AnySearchDAO;
-import org.apache.syncope.core.persistence.api.dao.PlainSchemaDAO;
 import org.apache.syncope.core.persistence.api.dao.UserDAO;
 import org.apache.syncope.core.persistence.api.dao.search.AnyCond;
 import org.apache.syncope.core.persistence.api.dao.search.AttrCond;
 import org.apache.syncope.core.persistence.api.dao.search.OrderByClause;
 import org.apache.syncope.core.persistence.api.dao.search.RoleCond;
 import org.apache.syncope.core.persistence.api.dao.search.SearchCond;
-import org.apache.syncope.core.persistence.api.entity.user.DynRoleMembership;
 import org.apache.syncope.core.persistence.api.entity.Role;
 import org.apache.syncope.core.persistence.api.entity.group.GPlainAttr;
 import org.apache.syncope.core.persistence.api.entity.group.Group;
+import org.apache.syncope.core.persistence.api.entity.user.DynRoleMembership;
 import org.apache.syncope.core.persistence.api.entity.user.UMembership;
 import org.apache.syncope.core.persistence.api.entity.user.User;
 import org.apache.syncope.core.persistence.jpa.AbstractTest;
@@ -83,7 +84,7 @@ public class AnySearchTest extends AbstractTest {
         role.add(realmDAO.getRoot());
         role.add(realmDAO.findByFullPath("/even/two"));
         role.getEntitlements().add(IdRepoEntitlement.AUDIT_LIST);
-        role.getEntitlements().add(IdRepoEntitlement.AUDIT_UPDATE);
+        role.getEntitlements().add(IdRepoEntitlement.AUDIT_SET);
 
         DynRoleMembership dynMembership = entityFactory.newEntity(DynRoleMembership.class);
         dynMembership.setFIQLCond("cool==true");
@@ -130,14 +131,16 @@ public class AnySearchTest extends AbstractTest {
         anyCond.setSchema("id");
 
         List<User> users = searchDAO.search(
-                Collections.singleton(SyncopeConstants.ROOT_REALM),
+                realmDAO.getRoot(), true,
+                Set.of(SyncopeConstants.ROOT_REALM),
                 SearchCond.getLeaf(anyCond), 1, 100, Collections.emptyList(), AnyTypeKind.USER);
         assertNotNull(users);
         assertTrue(users.stream().anyMatch(user -> rossini.getKey().equals(user.getKey())));
 
         // 3. search all users with director owner's entitlements: only rossini is returned
         users = searchDAO.search(
-                Collections.singleton(RealmUtils.getGroupOwnerRealm(group.getRealm().getFullPath(), group.getKey())),
+                group.getRealm(), true,
+                Set.of(RealmUtils.getGroupOwnerRealm(group.getRealm().getFullPath(), group.getKey())),
                 SearchCond.getLeaf(anyCond), 1, 100, Collections.emptyList(), AnyTypeKind.USER);
         assertNotNull(users);
         assertEquals(1, users.size());

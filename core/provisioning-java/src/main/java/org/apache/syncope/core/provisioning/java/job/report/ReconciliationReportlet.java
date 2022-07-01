@@ -35,11 +35,10 @@ import org.apache.syncope.common.lib.report.ReconciliationReportletConf.Feature;
 import org.apache.syncope.common.lib.report.ReportletConf;
 import org.apache.syncope.common.lib.types.AnyTypeKind;
 import org.apache.syncope.core.persistence.api.dao.AnyDAO;
-import org.apache.syncope.core.persistence.api.search.SearchCondConverter;
-import org.apache.syncope.core.provisioning.api.utils.FormatUtils;
 import org.apache.syncope.core.persistence.api.dao.AnySearchDAO;
 import org.apache.syncope.core.persistence.api.dao.AnyTypeDAO;
 import org.apache.syncope.core.persistence.api.dao.GroupDAO;
+import org.apache.syncope.core.persistence.api.dao.RealmDAO;
 import org.apache.syncope.core.persistence.api.dao.ReportletConfClass;
 import org.apache.syncope.core.persistence.api.dao.UserDAO;
 import org.apache.syncope.core.persistence.api.dao.search.AnyTypeCond;
@@ -52,10 +51,12 @@ import org.apache.syncope.core.persistence.api.entity.group.Group;
 import org.apache.syncope.core.persistence.api.entity.resource.MappingItem;
 import org.apache.syncope.core.persistence.api.entity.resource.Provision;
 import org.apache.syncope.core.persistence.api.entity.user.User;
+import org.apache.syncope.core.persistence.api.search.SearchCondConverter;
 import org.apache.syncope.core.persistence.api.search.SearchCondVisitor;
 import org.apache.syncope.core.provisioning.api.Connector;
 import org.apache.syncope.core.provisioning.api.ConnectorManager;
 import org.apache.syncope.core.provisioning.api.MappingManager;
+import org.apache.syncope.core.provisioning.api.utils.FormatUtils;
 import org.apache.syncope.core.provisioning.java.utils.MappingUtils;
 import org.identityconnectors.framework.common.objects.Attribute;
 import org.identityconnectors.framework.common.objects.AttributeBuilder;
@@ -75,6 +76,9 @@ import org.xml.sax.helpers.AttributesImpl;
 public class ReconciliationReportlet extends AbstractReportlet {
 
     private static final int PAGE_SIZE = 10;
+
+    @Autowired
+    private RealmDAO realmDAO;
 
     @Autowired
     private UserDAO userDAO;
@@ -388,7 +392,12 @@ public class ReconciliationReportlet extends AbstractReportlet {
         } else {
             SearchCond cond = SearchCondConverter.convert(searchCondVisitor, this.conf.getUserMatchingCond());
 
-            int total = searchDAO.count(SyncopeConstants.FULL_ADMIN_REALMS, cond, AnyTypeKind.USER);
+            int total = searchDAO.count(
+                    realmDAO.getRoot(),
+                    true,
+                    SyncopeConstants.FULL_ADMIN_REALMS,
+                    cond,
+                    AnyTypeKind.USER);
             int pages = (total / AnyDAO.DEFAULT_PAGE_SIZE) + 1;
 
             status.set("Processing " + total + " users in " + pages + " pages");
@@ -400,6 +409,8 @@ public class ReconciliationReportlet extends AbstractReportlet {
                 status.set("Processing " + total + " users: page " + page + " of " + pages);
 
                 doExtract(handler, searchDAO.search(
+                        realmDAO.getRoot(),
+                        true,
                         SyncopeConstants.FULL_ADMIN_REALMS,
                         cond,
                         page,
@@ -428,7 +439,12 @@ public class ReconciliationReportlet extends AbstractReportlet {
         } else {
             SearchCond cond = SearchCondConverter.convert(searchCondVisitor, this.conf.getUserMatchingCond());
 
-            int total = searchDAO.count(SyncopeConstants.FULL_ADMIN_REALMS, cond, AnyTypeKind.GROUP);
+            int total = searchDAO.count(
+                    realmDAO.getRoot(),
+                    true,
+                    SyncopeConstants.FULL_ADMIN_REALMS,
+                    cond,
+                    AnyTypeKind.GROUP);
             int pages = (total / AnyDAO.DEFAULT_PAGE_SIZE) + 1;
 
             status.set("Processing " + total + " groups in " + pages + " pages");
@@ -440,6 +456,8 @@ public class ReconciliationReportlet extends AbstractReportlet {
                 status.set("Processing " + total + " groups: page " + page + " of " + pages);
 
                 doExtract(handler, searchDAO.search(
+                        realmDAO.getRoot(),
+                        true,
                         SyncopeConstants.FULL_ADMIN_REALMS,
                         cond,
                         page,
@@ -460,7 +478,12 @@ public class ReconciliationReportlet extends AbstractReportlet {
                                 SearchCond.getLeaf(anyTypeCond),
                                 SearchCondConverter.convert(searchCondVisitor, this.conf.getAnyObjectMatchingCond()));
 
-                int total = searchDAO.count(SyncopeConstants.FULL_ADMIN_REALMS, cond, AnyTypeKind.ANY_OBJECT);
+                int total = searchDAO.count(
+                        realmDAO.getRoot(),
+                        true,
+                        SyncopeConstants.FULL_ADMIN_REALMS,
+                        cond,
+                        AnyTypeKind.ANY_OBJECT);
                 int pages = (total / AnyDAO.DEFAULT_PAGE_SIZE) + 1;
 
                 status.set("Processing " + total + " any objects " + anyType.getKey() + " in " + pages + " pages");
@@ -475,6 +498,8 @@ public class ReconciliationReportlet extends AbstractReportlet {
                             + ": page " + page + " of " + pages);
 
                     doExtract(handler, searchDAO.search(
+                            realmDAO.getRoot(),
+                            true,
                             SyncopeConstants.FULL_ADMIN_REALMS,
                             cond,
                             page,
