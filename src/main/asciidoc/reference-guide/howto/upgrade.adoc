@@ -23,8 +23,8 @@ indications below.
 
 ==== Preparation
 
-First of all, update the existing Syncope 3.0 deployment's code / Docker images to the latest
-https://cwiki.apache.org/confluence/display/SYNCOPE/Notturno[4.0 release^] available.
+First of all, update the existing Syncope 4.0 deployment's code / Docker images to the latest
+https://cwiki.apache.org/confluence/display/SYNCOPE/Capriccio[4.1 release^] available.
 
 Also, ensure to have a full backup of the existing database used as <<persistence,internal storage>>.
 
@@ -119,5 +119,5 @@ are pushed to the internal storage
 corrections until everything runs clear; consider to restore from the backup taken above if needed, before executing
 the updated SQL statements again
 
-. start the standalone process or the Jakarta EE container of Apache Syncope 1.0 Core, and watch the log files
+. start the standalone process or the Jakarta EE container of Apache Syncope 4.1 Core, and watch the log files
 to check for any error
