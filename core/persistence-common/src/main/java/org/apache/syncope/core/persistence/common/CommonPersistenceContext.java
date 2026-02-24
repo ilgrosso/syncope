@@ -23,7 +23,6 @@ import org.apache.syncope.common.keymaster.client.api.ConfParamOps;
 import org.apache.syncope.common.lib.types.AnyTypeKind;
 import org.apache.syncope.core.persistence.api.attrvalue.PlainAttrValidationManager;
 import org.apache.syncope.core.persistence.api.dao.AnyObjectDAO;
-import org.apache.syncope.core.persistence.api.dao.AnySearchDAO;
 import org.apache.syncope.core.persistence.api.dao.GroupDAO;
 import org.apache.syncope.core.persistence.api.dao.PlainSchemaDAO;
 import org.apache.syncope.core.persistence.api.dao.RealmChecker;
@@ -33,11 +32,11 @@ import org.apache.syncope.core.persistence.api.entity.AnyUtilsFactory;
 import org.apache.syncope.core.persistence.api.entity.EntityFactory;
 import org.apache.syncope.core.persistence.api.entity.am.ClientAppUtilsFactory;
 import org.apache.syncope.core.persistence.api.entity.policy.PolicyUtilsFactory;
-import org.apache.syncope.core.persistence.api.search.SearchCondVisitor;
+import org.apache.syncope.core.persistence.api.search.AnySearchCondVisitor;
+import org.apache.syncope.core.persistence.api.search.RealmSearchCondVisitor;
 import org.apache.syncope.core.persistence.api.utils.RealmUtils;
 import org.apache.syncope.core.persistence.common.attrvalue.DefaultPlainAttrValidationManager;
 import org.apache.syncope.core.persistence.common.content.KeymasterConfParamLoader;
-import org.apache.syncope.core.persistence.common.dao.AnyFinder;
 import org.apache.syncope.core.persistence.common.entity.DefaultAnyUtils;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -52,8 +51,14 @@ public class CommonPersistenceContext {
 
     @ConditionalOnMissingBean
     @Bean
-    public SearchCondVisitor searchCondVisitor() {
-        return new SearchCondVisitor();
+    public AnySearchCondVisitor anySearchCondVisitor() {
+        return new AnySearchCondVisitor();
+    }
+
+    @ConditionalOnMissingBean
+    @Bean
+    public RealmSearchCondVisitor realmSearchCondVisitor() {
+        return new RealmSearchCondVisitor();
     }
 
     @Bean
@@ -156,12 +161,6 @@ public class CommonPersistenceContext {
             final ConfigurableApplicationContext ctx) {
 
         return new KeymasterConfParamLoader(confParamOps, ctx);
-    }
-
-    @ConditionalOnMissingBean
-    @Bean
-    public AnyFinder anyFinder(final @Lazy PlainSchemaDAO plainSchemaDAO, final @Lazy AnySearchDAO anySearchDAO) {
-        return new AnyFinder(plainSchemaDAO, anySearchDAO);
     }
 
     @ConditionalOnMissingBean

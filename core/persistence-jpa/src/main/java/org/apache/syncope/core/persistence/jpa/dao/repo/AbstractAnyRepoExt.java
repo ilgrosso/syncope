@@ -22,7 +22,6 @@ import jakarta.persistence.EntityManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.time.OffsetDateTime;
-import java.util.List;
 import java.util.Optional;
 import org.apache.syncope.core.persistence.api.dao.AnyChecker;
 import org.apache.syncope.core.persistence.api.dao.NotFoundException;
@@ -30,7 +29,6 @@ import org.apache.syncope.core.persistence.api.entity.Any;
 import org.apache.syncope.core.persistence.api.entity.AnyUtils;
 import org.apache.syncope.core.persistence.api.entity.Relationship;
 import org.apache.syncope.core.persistence.api.entity.anyobject.AnyObject;
-import org.apache.syncope.core.persistence.common.dao.AnyFinder;
 import org.apache.syncope.core.persistence.jpa.entity.anyobject.JPAAnyObject;
 import org.apache.syncope.core.persistence.jpa.entity.group.JPAGroup;
 import org.apache.syncope.core.persistence.jpa.entity.user.JPAUser;
@@ -48,8 +46,6 @@ public abstract class AbstractAnyRepoExt<A extends Any> implements AnyRepoExt<A>
 
     protected final AnyChecker anyChecker;
 
-    protected final AnyFinder anyFinder;
-
     protected final AnyUtils anyUtils;
 
     protected final String table;
@@ -57,12 +53,10 @@ public abstract class AbstractAnyRepoExt<A extends Any> implements AnyRepoExt<A>
     protected AbstractAnyRepoExt(
             final EntityManager entityManager,
             final AnyChecker anyChecker,
-            final AnyFinder anyFinder,
             final AnyUtils anyUtils) {
 
         this.entityManager = entityManager;
         this.anyChecker = anyChecker;
-        this.anyFinder = anyFinder;
         this.anyUtils = anyUtils;
         switch (anyUtils.anyTypeKind()) {
             case ANY_OBJECT:
@@ -131,11 +125,6 @@ public abstract class AbstractAnyRepoExt<A extends Any> implements AnyRepoExt<A>
         securityChecks(any);
 
         return any;
-    }
-
-    @Override
-    public List<A> findByDerAttrValue(final String expression, final String value, final boolean ignoreCaseMatch) {
-        return anyFinder.findByDerAttrValue(anyUtils.anyTypeKind(), expression, value, ignoreCaseMatch);
     }
 
     @Override

@@ -518,11 +518,11 @@ public abstract class AbstractITCase {
         IS_FLOWABLE_ENABLED = uwfAdapter.get("resource").asString().contains("Flowable");
 
         JsonNode anySearchDAO = beans.findValues("anySearchDAO").getFirst();
-        boolean isElasticsearchEnabled = anySearchDAO.get("type").asString().contains("Elasticsearch");
-        boolean isOpenSearchEnabled = anySearchDAO.get("type").asString().contains("OpenSearch");
+        boolean isElasticsearchEnabled = anySearchDAO.get("resource").asString().contains("Elasticsearch");
+        boolean isOpenSearchEnabled = anySearchDAO.get("resource").asString().contains("OpenSearch");
         IS_EXT_SEARCH_ENABLED = isElasticsearchEnabled || isOpenSearchEnabled;
 
-        IS_NEO4J_PERSISTENCE = anySearchDAO.get("type").asString().contains("Neo4j");
+        IS_NEO4J_PERSISTENCE = anySearchDAO.get("resource").asString().contains("neo4j");
 
         if (!IS_EXT_SEARCH_ENABLED) {
             return;

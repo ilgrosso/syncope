@@ -28,7 +28,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Strings;
 import org.apache.commons.lang3.tuple.Pair;
@@ -133,6 +132,20 @@ public class Neo4jAnySearchDAO extends AbstractAnySearchDAO {
                 : value;
     }
 
+    protected static void queryOp(
+            final TextStringBuilder query,
+            final String op,
+            final QueryInfo leftInfo,
+            final QueryInfo rightInfo) {
+
+        query.append("WHERE EXISTS { ").
+                append(Strings.CS.prependIfMissing(leftInfo.query().toString(), "MATCH (n) ")).
+                append(" } ").
+                append(op).append(" EXISTS { ").
+                append(Strings.CS.prependIfMissing(rightInfo.query().toString(), "MATCH (n) ")).
+                append(" }");
+    }
+
     protected final Neo4jTemplate neo4jTemplate;
 
     protected final Neo4jClient neo4jClient;
@@ -198,7 +211,8 @@ public class Neo4jAnySearchDAO extends AbstractAnySearchDAO {
                             return noRealm;
                         });
 
-                        realmKeys.addAll(realmSearchDAO.findDescendants(realm.getFullPath(), base.getFullPath()));
+                        realmKeys.addAll(realmSearchDAO.findDescendants(realm.getFullPath(), base.getFullPath()).
+                                stream().map(Realm::getKey).toList());
                     }));
         } else {
             if (adminRealms.stream().anyMatch(r -> r.startsWith(base.getFullPath()))) {
@@ -605,12 +619,13 @@ public class Neo4jAnySearchDAO extends AbstractAnySearchDAO {
                     null);
         }
 
-        CheckResult<AnyCond> checked = check(cond, kind);
+        CheckResult<AnyCond> checked = check(
+                cond,
+                anyUtilsFactory.getInstance(kind).getField(cond.getSchema()).
+                        orElseThrow(() -> new IllegalArgumentException("Invalid schema " + cond.getSchema())),
+                RELATIONSHIP_FIELDS);
 
-        if (ArrayUtils.contains(
-                RELATIONSHIP_FIELDS,
-                StringUtils.substringBefore(checked.cond().getSchema(), "_id"))) {
-
+        if (RELATIONSHIP_FIELDS.contains(StringUtils.substringBefore(checked.cond().getSchema(), "_id"))) {
             String field = StringUtils.substringBefore(checked.cond().getSchema(), "_id");
             switch (field) {
                 case "uManager" -> {
@@ -671,20 +686,6 @@ public class Neo4jAnySearchDAO extends AbstractAnySearchDAO {
             final TextStringBuilder query) {
 
         // do nothing by default, leave it open for subclasses
-    }
-
-    protected void queryOp(
-            final TextStringBuilder query,
-            final String op,
-            final QueryInfo leftInfo,
-            final QueryInfo rightInfo) {
-
-        query.append("WHERE EXISTS { ").
-                append(Strings.CS.prependIfMissing(leftInfo.query().toString(), "MATCH (n) ")).
-                append(" } ").
-                append(op).append(" EXISTS { ").
-                append(Strings.CS.prependIfMissing(rightInfo.query().toString(), "MATCH (n) ")).
-                append(" }");
     }
 
     protected QueryInfo getQuery(final AnyTypeKind kind, final SearchCond cond, final Map<String, Object> parameters) {
@@ -925,6 +926,8 @@ public class Neo4jAnySearchDAO extends AbstractAnySearchDAO {
         // 4. prepare the count query
         query.append("RETURN COUNT(id)");
 
+        LOG.debug("Query: {}, parameters: {}", query, parameters);
+
         return neo4jTemplate.count(query.toString(), parameters);
     }
 
@@ -1001,7 +1004,7 @@ public class Neo4jAnySearchDAO extends AbstractAnySearchDAO {
                     append(" LIMIT ").append(pageable.getPageSize());
         }
 
-        LOG.debug("Query with auth and order by statements: {}, parameters: {}", query, parameters);
+        LOG.debug("Query: {}, parameters: {}", query, parameters);
 
         // 5. Prepare the result (avoiding duplicates)
         return buildResult(neo4jClient.query(query.toString()).bindAll(parameters).fetch().all().stream().

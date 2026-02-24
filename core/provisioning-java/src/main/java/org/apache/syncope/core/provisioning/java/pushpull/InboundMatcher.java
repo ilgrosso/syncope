@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
@@ -143,11 +144,11 @@ public class InboundMatcher {
         // first, attempt to match the provided connObjectLinkValue against the configured connObjectLink
         // (if available) via internal search
         if (StringUtils.isNotBlank(provision.getMapping().getConnObjectLink())) {
-            List<? extends Any> found = anyUtilsFactory.getInstance(anyType.getKind()).dao().
-                    findByDerAttrValue(
-                            provision.getMapping().getConnObjectLink(),
-                            connObjectLinkValue,
-                            provision.isIgnoreCaseMatch());
+            List<? extends Any> found = anySearchDAO.findByDerAttrValue(
+                    provision.getMapping().getConnObjectLink(),
+                    connObjectLinkValue,
+                    provision.isIgnoreCaseMatch(),
+                    anyType.getKind());
             if (!found.isEmpty()) {
                 return Optional.of(new InboundMatch(MatchType.ANY, found.getFirst()));
             }
@@ -308,10 +309,11 @@ public class InboundMatcher {
                 }
 
                 case DERIVED ->
-                    anys.addAll(anyUtils.dao().findByDerAttrValue(
+                    anys.addAll(anySearchDAO.findByDerAttrValue(
                             ((DerSchema) intAttrName.getSchemaInfo().schema()).getExpression(),
                             finalConnObjectKeyValue,
-                            ignoreCaseMatch));
+                            ignoreCaseMatch,
+                            anyTypeKind));
 
                 default -> {
                 }
@@ -439,10 +441,9 @@ public class InboundMatcher {
     public List<Realm> match(final LiveSyncDelta syncDelta, final OrgUnit orgUnit) {
         String connObjectKey = null;
 
-        Optional<Item> connObjectKeyItem = orgUnit.getConnObjectKeyItem();
-        if (connObjectKeyItem.isPresent()) {
-            Attribute connObjectKeyAttr = syncDelta.getObject().
-                    getAttributeByName(connObjectKeyItem.get().getExtAttrName());
+        Item connObjectKeyItem = orgUnit.getConnObjectKeyItem().orElse(null);
+        if (connObjectKeyItem != null) {
+            Attribute connObjectKeyAttr = syncDelta.getObject().getAttributeByName(connObjectKeyItem.getExtAttrName());
             if (connObjectKeyAttr != null) {
                 connObjectKey = AttributeUtil.getStringValue(connObjectKeyAttr);
             }
@@ -452,10 +453,10 @@ public class InboundMatcher {
         }
 
         for (ItemTransformer transformer
-                : MappingUtils.getItemTransformers(connObjectKeyItem.get(), getTransformers(connObjectKeyItem.get()))) {
+                : MappingUtils.getItemTransformers(connObjectKeyItem, getTransformers(connObjectKeyItem))) {
 
             List<Object> output = transformer.beforePull(
-                    connObjectKeyItem.get(),
+                    connObjectKeyItem,
                     null,
                     List.of(connObjectKey));
             if (!CollectionUtils.isEmpty(output)) {
@@ -463,27 +464,58 @@ public class InboundMatcher {
             }
         }
 
+        IntAttrName intAttrName;
+        try {
+            intAttrName = intAttrNameParser.parse(connObjectKeyItem.getIntAttrName());
+        } catch (ParseException e) {
+            LOG.error("Invalid intAttrName '{}' specified, ignoring", connObjectKeyItem.getIntAttrName(), e);
+            return List.of();
+        }
+
         List<Realm> result = new ArrayList<>();
 
-        switch (connObjectKeyItem.get().getIntAttrName()) {
-            case "key" -> {
-                realmDAO.findById(connObjectKey).ifPresent(result::add);
-            }
+        if (intAttrName.getField() != null) {
+            switch (intAttrName.getField()) {
+                case "key" ->
+                    realmDAO.findById(connObjectKey).ifPresent(result::add);
 
-            case "name" -> {
-                if (orgUnit.isIgnoreCaseMatch()) {
-                    result.addAll(realmSearchDAO.findDescendants(
-                            SyncopeConstants.ROOT_REALM, connObjectKey, Pageable.unpaged()));
-                } else {
-                    result.addAll(realmSearchDAO.findByName(connObjectKey).stream().toList());
+                case "name" -> {
+                    if (orgUnit.isIgnoreCaseMatch()) {
+                        AnyCond cond = new AnyCond();
+                        cond.setType(AttrCond.Type.IEQ);
+                        cond.setSchema("name");
+                        cond.setExpression(connObjectKey);
+                        result.addAll(realmSearchDAO.search(
+                                Set.of(SyncopeConstants.ROOT_REALM), SearchCond.of(cond), Pageable.unpaged()));
+                    } else {
+                        result.addAll(realmSearchDAO.findByName(connObjectKey).stream().toList());
+                    }
+                }
+
+                case "fullpath" ->
+                    realmSearchDAO.findByFullPath(connObjectKey).ifPresent(result::add);
+
+                default -> {
                 }
             }
+        } else if (intAttrName.getSchemaInfo() != null) {
+            switch (intAttrName.getSchemaInfo().type()) {
+                case PLAIN -> {
+                    AttrCond cond = new AttrCond(orgUnit.isIgnoreCaseMatch() ? AttrCond.Type.IEQ : AttrCond.Type.EQ);
+                    cond.setSchema(intAttrName.getSchemaInfo().schema().getKey());
+                    cond.setExpression(connObjectKey);
+                    result.addAll(realmSearchDAO.search(
+                            Set.of(SyncopeConstants.ROOT_REALM), SearchCond.of(cond), Pageable.unpaged()));
+                }
 
-            case "fullpath" -> {
-                realmSearchDAO.findByFullPath(connObjectKey).ifPresent(result::add);
-            }
+                case DERIVED ->
+                    result.addAll(realmSearchDAO.findByDerAttrValue(
+                            ((DerSchema) intAttrName.getSchemaInfo().schema()).getExpression(),
+                            connObjectKey,
+                            orgUnit.isIgnoreCaseMatch()));
 
-            default -> {
+                default -> {
+                }
             }
         }
 

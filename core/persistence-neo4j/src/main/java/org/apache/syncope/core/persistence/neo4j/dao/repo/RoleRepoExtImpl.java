@@ -26,7 +26,6 @@ import org.apache.syncope.core.persistence.api.dao.AnySearchDAO;
 import org.apache.syncope.core.persistence.api.dao.DelegationDAO;
 import org.apache.syncope.core.persistence.api.entity.Realm;
 import org.apache.syncope.core.persistence.api.entity.Role;
-import org.apache.syncope.core.persistence.api.search.SearchCondVisitor;
 import org.apache.syncope.core.persistence.neo4j.dao.AbstractDAO;
 import org.apache.syncope.core.persistence.neo4j.entity.EntityCacheKey;
 import org.apache.syncope.core.persistence.neo4j.entity.Neo4jRealm;
@@ -50,8 +49,6 @@ public class RoleRepoExtImpl extends AbstractDAO implements RoleRepoExt {
 
     protected final DelegationDAO delegationDAO;
 
-    protected final SearchCondVisitor searchCondVisitor;
-
     protected final NodeValidator nodeValidator;
 
     protected final Cache<EntityCacheKey, Neo4jRole> cache;
@@ -61,7 +58,6 @@ public class RoleRepoExtImpl extends AbstractDAO implements RoleRepoExt {
             final AnyMatchDAO anyMatchDAO,
             final AnySearchDAO anySearchDAO,
             final DelegationDAO delegationDAO,
-            final SearchCondVisitor searchCondVisitor,
             final Neo4jTemplate neo4jTemplate,
             final Neo4jClient neo4jClient,
             final NodeValidator nodeValidator,
@@ -72,7 +68,6 @@ public class RoleRepoExtImpl extends AbstractDAO implements RoleRepoExt {
         this.anyMatchDAO = anyMatchDAO;
         this.anySearchDAO = anySearchDAO;
         this.delegationDAO = delegationDAO;
-        this.searchCondVisitor = searchCondVisitor;
         this.nodeValidator = nodeValidator;
         this.cache = cache;
     }

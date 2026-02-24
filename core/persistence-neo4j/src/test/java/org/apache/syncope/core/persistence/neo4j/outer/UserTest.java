@@ -28,10 +28,12 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.UUID;
+import org.apache.syncope.common.lib.types.AnyTypeKind;
 import org.apache.syncope.common.lib.types.CipherAlgorithm;
 import org.apache.syncope.core.persistence.api.attrvalue.InvalidEntityException;
 import org.apache.syncope.core.persistence.api.attrvalue.PlainAttrValidationManager;
 import org.apache.syncope.core.persistence.api.dao.AnyObjectDAO;
+import org.apache.syncope.core.persistence.api.dao.AnySearchDAO;
 import org.apache.syncope.core.persistence.api.dao.AnyTypeClassDAO;
 import org.apache.syncope.core.persistence.api.dao.DelegationDAO;
 import org.apache.syncope.core.persistence.api.dao.DerSchemaDAO;
@@ -93,6 +95,9 @@ public class UserTest extends AbstractTest {
 
     @Autowired
     private AnyTypeClassDAO anyTypeClassDAO;
+
+    @Autowired
+    private AnySearchDAO anySearchDAO;
 
     @Autowired
     private PlainAttrValidationManager validator;
@@ -285,13 +290,15 @@ public class UserTest extends AbstractTest {
         assertNotNull(firstname);
 
         // search by ksuffix derived attribute
-        List<User> list = userDAO.findByDerAttrValue(
-                derSchemaDAO.findById("ksuffix").orElseThrow().getExpression(), firstname + 'k', false);
+        List<User> list = anySearchDAO.findByDerAttrValue(
+                derSchemaDAO.findById("ksuffix").orElseThrow().getExpression(),
+                firstname + 'k', false, AnyTypeKind.USER);
         assertEquals(1, list.size());
 
         // search by kprefix derived attribute
-        list = userDAO.findByDerAttrValue(
-                derSchemaDAO.findById("kprefix").orElseThrow().getExpression(), 'k' + firstname, false);
+        list = anySearchDAO.findByDerAttrValue(
+                derSchemaDAO.findById("kprefix").orElseThrow().getExpression(),
+                'k' + firstname, false, AnyTypeKind.USER);
         assertEquals(1, list.size());
     }
 }

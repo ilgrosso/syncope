@@ -75,8 +75,6 @@ public interface AnyRepoExt<A extends Any> {
 
     A authFind(String key);
 
-    List<A> findByDerAttrValue(String expression, String value, boolean ignoreCaseMatch);
-
     Collection<String> findAllResourceKeys(String key);
 
     List<A> findByResourcesContaining(ExternalResource resource);

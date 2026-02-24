@@ -19,7 +19,6 @@
 package org.apache.syncope.core.persistence.jpa;
 
 import jakarta.persistence.EntityManager;
-import jakarta.persistence.EntityManagerFactory;
 import org.apache.syncope.core.persistence.api.attrvalue.PlainAttrValidationManager;
 import org.apache.syncope.core.persistence.api.dao.AnyObjectDAO;
 import org.apache.syncope.core.persistence.api.dao.AnySearchDAO;
@@ -30,7 +29,9 @@ import org.apache.syncope.core.persistence.api.dao.RealmSearchDAO;
 import org.apache.syncope.core.persistence.api.dao.UserDAO;
 import org.apache.syncope.core.persistence.api.entity.AnyUtilsFactory;
 import org.apache.syncope.core.persistence.api.entity.EntityFactory;
+import org.apache.syncope.core.persistence.api.utils.RealmUtils;
 import org.apache.syncope.core.persistence.jpa.dao.OracleJPAAnySearchDAO;
+import org.apache.syncope.core.persistence.jpa.dao.OracleJPARealmSearchDAO;
 import org.apache.syncope.core.persistence.jpa.dao.repo.OraclePlainSchemaRepoExtImpl;
 import org.apache.syncope.core.persistence.jpa.dao.repo.PlainSchemaRepoExt;
 import org.apache.syncope.core.persistence.jpa.entity.OracleEntityFactory;
@@ -62,7 +63,6 @@ public class OraclePersistenceContext {
             final @Lazy EntityFactory entityFactory,
             final AnyUtilsFactory anyUtilsFactory,
             final PlainAttrValidationManager validator,
-            final EntityManagerFactory entityManagerFactory,
             final EntityManager entityManager) {
 
         return new OracleJPAAnySearchDAO(
@@ -74,8 +74,28 @@ public class OraclePersistenceContext {
                 entityFactory,
                 anyUtilsFactory,
                 validator,
-                entityManagerFactory,
                 entityManager);
+    }
+
+    @ConditionalOnMissingBean
+    @Bean
+    public RealmSearchDAO realmSearchDAO(
+            final EntityManager entityManager,
+            final @Lazy PlainSchemaDAO plainSchemaDAO,
+            final @Lazy UserDAO userDAO,
+            final @Lazy GroupDAO groupDAO,
+            final @Lazy EntityFactory entityFactory,
+            final PlainAttrValidationManager validator,
+            final RealmUtils realmUtils) {
+
+        return new OracleJPARealmSearchDAO(
+                entityManager,
+                plainSchemaDAO,
+                userDAO,
+                groupDAO,
+                entityFactory,
+                validator,
+                realmUtils);
     }
 
     @ConditionalOnMissingBean

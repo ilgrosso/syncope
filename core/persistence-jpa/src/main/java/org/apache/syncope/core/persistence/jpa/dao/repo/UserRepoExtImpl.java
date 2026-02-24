@@ -47,7 +47,6 @@ import org.apache.syncope.core.persistence.api.entity.group.Group;
 import org.apache.syncope.core.persistence.api.entity.user.UMembership;
 import org.apache.syncope.core.persistence.api.entity.user.User;
 import org.apache.syncope.core.persistence.api.utils.RealmUtils;
-import org.apache.syncope.core.persistence.common.dao.AnyFinder;
 import org.apache.syncope.core.persistence.jpa.entity.anyobject.JPAAnyObject;
 import org.apache.syncope.core.persistence.jpa.entity.group.JPAGroup;
 import org.apache.syncope.core.persistence.jpa.entity.user.JPALinkedAccount;
@@ -81,13 +80,11 @@ public class UserRepoExtImpl extends AbstractAnyRepoExt<User> implements UserRep
             final FIQLQueryDAO fiqlQueryDAO,
             final SecurityProperties securityProperties,
             final EntityManager entityManager,
-            final AnyChecker anyChecker,
-            final AnyFinder anyFinder) {
+            final AnyChecker anyChecker) {
 
         super(
                 entityManager,
                 anyChecker,
-                anyFinder,
                 anyUtilsFactory.getInstance(AnyTypeKind.USER));
         this.roleDAO = roleDAO;
         this.accessTokenDAO = accessTokenDAO;

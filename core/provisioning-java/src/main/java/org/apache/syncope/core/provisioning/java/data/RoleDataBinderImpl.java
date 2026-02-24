@@ -24,7 +24,6 @@ import org.apache.syncope.core.persistence.api.dao.RoleDAO;
 import org.apache.syncope.core.persistence.api.entity.EntityFactory;
 import org.apache.syncope.core.persistence.api.entity.Realm;
 import org.apache.syncope.core.persistence.api.entity.Role;
-import org.apache.syncope.core.persistence.api.search.SearchCondVisitor;
 import org.apache.syncope.core.provisioning.api.data.RoleDataBinder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,18 +38,14 @@ public class RoleDataBinderImpl implements RoleDataBinder {
 
     protected final EntityFactory entityFactory;
 
-    protected final SearchCondVisitor searchCondVisitor;
-
     public RoleDataBinderImpl(
             final RealmSearchDAO realmSearchDAO,
             final RoleDAO roleDAO,
-            final EntityFactory entityFactory,
-            final SearchCondVisitor searchCondVisitor) {
+            final EntityFactory entityFactory) {
 
         this.realmSearchDAO = realmSearchDAO;
         this.roleDAO = roleDAO;
         this.entityFactory = entityFactory;
-        this.searchCondVisitor = searchCondVisitor;
     }
 
     @Override

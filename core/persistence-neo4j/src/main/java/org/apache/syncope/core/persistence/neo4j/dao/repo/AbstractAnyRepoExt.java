@@ -38,7 +38,6 @@ import org.apache.syncope.core.persistence.api.entity.Relationship;
 import org.apache.syncope.core.persistence.api.entity.anyobject.AnyObject;
 import org.apache.syncope.core.persistence.api.entity.group.GRelationship;
 import org.apache.syncope.core.persistence.api.entity.user.URelationship;
-import org.apache.syncope.core.persistence.common.dao.AnyFinder;
 import org.apache.syncope.core.persistence.neo4j.dao.AbstractDAO;
 import org.apache.syncope.core.persistence.neo4j.entity.AbstractAny;
 import org.apache.syncope.core.persistence.neo4j.entity.EntityCacheKey;
@@ -84,8 +83,6 @@ public abstract class AbstractAnyRepoExt<A extends Any, N extends AbstractAny>
 
     protected final AnyChecker anyChecker;
 
-    protected final AnyFinder anyFinder;
-
     protected final AnyUtils anyUtils;
 
     protected AbstractAnyRepoExt(
@@ -93,7 +90,6 @@ public abstract class AbstractAnyRepoExt<A extends Any, N extends AbstractAny>
             final AnyTypeClassDAO anyTypeClassDAO,
             final DerSchemaDAO derSchemaDAO,
             final AnyChecker anyChecker,
-            final AnyFinder anyFinder,
             final AnyUtils anyUtils,
             final Neo4jTemplate neo4jTemplate,
             final Neo4jClient neo4jClient) {
@@ -103,7 +99,6 @@ public abstract class AbstractAnyRepoExt<A extends Any, N extends AbstractAny>
         this.anyTypeClassDAO = anyTypeClassDAO;
         this.derSchemaDAO = derSchemaDAO;
         this.anyChecker = anyChecker;
-        this.anyFinder = anyFinder;
         this.anyUtils = anyUtils;
     }
 
@@ -148,11 +143,6 @@ public abstract class AbstractAnyRepoExt<A extends Any, N extends AbstractAny>
         securityChecks(any);
 
         return any;
-    }
-
-    @Override
-    public List<A> findByDerAttrValue(final String expression, final String value, final boolean ignoreCaseMatch) {
-        return anyFinder.findByDerAttrValue(anyUtils.anyTypeKind(), expression, value, ignoreCaseMatch);
     }
 
     @Override

@@ -610,7 +610,7 @@ public class ReconciliationLogic extends AbstractLogic<EntityTO> {
                 orElseThrow(() -> new NotFoundException("Realm " + realm));
 
         Set<String> adminRealms = RealmUtils.getEffective(AuthContextUtils.getAuthorizations().get(entitlement), realm);
-        SearchCond effectiveCond = searchCond == null ? anyUtils.dao().getAllMatchingCond() : searchCond;
+        SearchCond effectiveCond = searchCond == null ? anySearchDAO.getAllMatchingCond() : searchCond;
 
         List<Any> matching;
         if (spec.getIgnorePaging()) {
