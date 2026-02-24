@@ -63,7 +63,7 @@ import org.apache.syncope.core.persistence.api.dao.WAConfigDAO;
 import org.apache.syncope.core.persistence.api.entity.AnyUtilsFactory;
 import org.apache.syncope.core.persistence.api.entity.EntityFactory;
 import org.apache.syncope.core.persistence.api.entity.task.TaskUtilsFactory;
-import org.apache.syncope.core.persistence.api.search.SearchCondVisitor;
+import org.apache.syncope.core.persistence.api.search.AnySearchCondVisitor;
 import org.apache.syncope.core.persistence.api.utils.RealmUtils;
 import org.apache.syncope.core.provisioning.api.AnyObjectProvisioningManager;
 import org.apache.syncope.core.provisioning.api.AuditEventProcessor;
@@ -576,7 +576,7 @@ public class ProvisioningContext {
     @Bean
     public NotificationManager notificationManager(
             final EntityFactory entityFactory,
-            final SearchCondVisitor searchCondVisitor,
+            final AnySearchCondVisitor searchCondVisitor,
             final DerSchemaDAO derSchemaDAO,
             final NotificationDAO notificationDAO,
             final AnyObjectDAO anyObjectDAO,
@@ -849,7 +849,7 @@ public class ProvisioningContext {
     @ConditionalOnMissingBean
     @Bean
     public FIQLQueryDataBinder fiqlQueryDataBinder(
-            final SearchCondVisitor searchCondVisitor,
+            final AnySearchCondVisitor searchCondVisitor,
             final UserDAO userDAO,
             final EntityFactory entityFactory) {
 
@@ -860,7 +860,7 @@ public class ProvisioningContext {
     @Bean
     public GroupDataBinder groupDataBinder(
             final EntityFactory entityFactory,
-            final SearchCondVisitor searchCondVisitor,
+            final AnySearchCondVisitor searchCondVisitor,
             final AnyUtilsFactory anyUtilsFactory,
             final AnyTypeDAO anyTypeDAO,
             final RealmSearchDAO realmSearchDAO,
@@ -1033,15 +1033,10 @@ public class ProvisioningContext {
     @Bean
     public RoleDataBinder roleDataBinder(
             final EntityFactory entityFactory,
-            final SearchCondVisitor searchCondVisitor,
             final RealmSearchDAO realmSearchDAO,
             final RoleDAO roleDAO) {
 
-        return new RoleDataBinderImpl(
-                realmSearchDAO,
-                roleDAO,
-                entityFactory,
-                searchCondVisitor);
+        return new RoleDataBinderImpl(realmSearchDAO, roleDAO, entityFactory);
     }
 
     @ConditionalOnMissingBean

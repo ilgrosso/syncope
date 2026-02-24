@@ -142,7 +142,7 @@ public class OpenSearchAnySearchDAO extends AbstractAnySearchDAO {
                         });
 
                         realmSearchDAO.findDescendants(realm.getFullPath(), base.getFullPath()).
-                                forEach(descendant -> queries.add(
+                                stream().map(Realm::getKey).forEach(descendant -> queries.add(
                                 new Query.Builder().term(QueryBuilders.term().
                                         field("realm").value(FieldValue.of(descendant)).caseInsensitive(false).build()).
                                         build()));
@@ -565,8 +565,8 @@ public class OpenSearchAnySearchDAO extends AbstractAnySearchDAO {
     }
 
     @Override
-    protected CheckResult<AnyCond> check(final AnyCond cond, final AnyTypeKind kind) {
-        CheckResult<AnyCond> checked = super.check(cond, kind);
+    protected CheckResult<AnyCond> check(final AnyCond cond, final Field field, final Set<String> relationshipsFields) {
+        CheckResult<AnyCond> checked = super.check(cond, field, relationshipsFields);
 
         // Manage difference between external id attribute and internal _id
         if ("id".equals(checked.cond().getSchema())) {
@@ -586,7 +586,11 @@ public class OpenSearchAnySearchDAO extends AbstractAnySearchDAO {
             cond.setExpression(realm.getKey());
         }
 
-        CheckResult<AnyCond> checked = check(cond, kind);
+        CheckResult<AnyCond> checked = check(
+                cond,
+                anyUtilsFactory.getInstance(kind).getField(cond.getSchema()).
+                        orElseThrow(() -> new IllegalArgumentException("Invalid schema " + cond.getSchema())),
+                RELATIONSHIP_FIELDS);
 
         return fillAttrQuery(checked.schema(), checked.value(), checked.cond());
     }

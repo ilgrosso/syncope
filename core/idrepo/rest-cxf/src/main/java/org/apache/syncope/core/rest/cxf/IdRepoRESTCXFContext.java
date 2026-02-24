@@ -96,7 +96,8 @@ import org.apache.syncope.core.persistence.api.dao.BatchDAO;
 import org.apache.syncope.core.persistence.api.dao.GroupDAO;
 import org.apache.syncope.core.persistence.api.dao.UserDAO;
 import org.apache.syncope.core.persistence.api.entity.EntityFactory;
-import org.apache.syncope.core.persistence.api.search.SearchCondVisitor;
+import org.apache.syncope.core.persistence.api.search.AnySearchCondVisitor;
+import org.apache.syncope.core.persistence.api.search.RealmSearchCondVisitor;
 import org.apache.syncope.core.rest.cxf.service.AccessTokenServiceImpl;
 import org.apache.syncope.core.rest.cxf.service.AnyObjectServiceImpl;
 import org.apache.syncope.core.rest.cxf.service.AnyTypeClassServiceImpl;
@@ -324,7 +325,7 @@ public class IdRepoRESTCXFContext {
     @ConditionalOnMissingBean
     @Bean
     public AnyObjectService anyObjectService(final AnyObjectDAO anyObjectDAO, final AnyObjectLogic anyObjectLogic,
-            final SearchCondVisitor searchCondVisitor) {
+            final AnySearchCondVisitor searchCondVisitor) {
         return new AnyObjectServiceImpl(searchCondVisitor, anyObjectDAO, anyObjectLogic);
     }
 
@@ -367,7 +368,7 @@ public class IdRepoRESTCXFContext {
     @ConditionalOnMissingBean
     @Bean
     public GroupService groupService(final GroupDAO groupDAO, final GroupLogic groupLogic,
-            final SearchCondVisitor searchCondVisitor) {
+            final AnySearchCondVisitor searchCondVisitor) {
         return new GroupServiceImpl(searchCondVisitor, groupDAO, groupLogic);
     }
 
@@ -397,8 +398,8 @@ public class IdRepoRESTCXFContext {
 
     @ConditionalOnMissingBean
     @Bean
-    public RealmService realmService(final RealmLogic realmLogic) {
-        return new RealmServiceImpl(realmLogic);
+    public RealmService realmService(final RealmLogic realmLogic, final RealmSearchCondVisitor searchCondVisitor) {
+        return new RealmServiceImpl(realmLogic, searchCondVisitor);
     }
 
     @ConditionalOnMissingBean
@@ -463,7 +464,7 @@ public class IdRepoRESTCXFContext {
             final UserDAO userDAO,
             final UserLogic userLogic,
             final SyncopeLogic syncopeLogic,
-            final SearchCondVisitor searchCondVisitor) {
+            final AnySearchCondVisitor searchCondVisitor) {
 
         return new UserServiceImpl(searchCondVisitor, userDAO, userLogic, syncopeLogic);
     }

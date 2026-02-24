@@ -77,8 +77,6 @@ public interface AnyRepoExt<A extends Any> {
 
     A authFind(String key);
 
-    List<A> findByDerAttrValue(String expression, String value, boolean ignoreCaseMatch);
-
     <S extends Schema> AllowedSchemas<S> findAllowedSchemas(A any, Class<S> reference);
 
     Collection<String> findAllResourceKeys(String key);

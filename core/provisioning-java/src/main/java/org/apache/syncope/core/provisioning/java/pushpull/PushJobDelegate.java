@@ -42,8 +42,8 @@ import org.apache.syncope.core.persistence.api.entity.Implementation;
 import org.apache.syncope.core.persistence.api.entity.Realm;
 import org.apache.syncope.core.persistence.api.entity.policy.PushPolicy;
 import org.apache.syncope.core.persistence.api.entity.task.PushTask;
+import org.apache.syncope.core.persistence.api.search.AnySearchCondVisitor;
 import org.apache.syncope.core.persistence.api.search.SearchCondConverter;
-import org.apache.syncope.core.persistence.api.search.SearchCondVisitor;
 import org.apache.syncope.core.provisioning.api.ProvisionSorter;
 import org.apache.syncope.core.provisioning.api.job.JobExecutionContext;
 import org.apache.syncope.core.provisioning.api.job.JobExecutionException;
@@ -59,7 +59,6 @@ import org.apache.syncope.core.spring.implementation.ImplementationManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 
 public class PushJobDelegate
         extends AbstractProvisioningJobDelegate<PushTask>
@@ -72,7 +71,7 @@ public class PushJobDelegate
     protected RealmSearchDAO realmSearchDAO;
 
     @Autowired
-    protected SearchCondVisitor searchCondVisitor;
+    protected AnySearchCondVisitor searchCondVisitor;
 
     @Autowired
     protected ConfigurableApplicationContext ctx;
@@ -212,7 +211,7 @@ public class PushJobDelegate
 
             // Never push the root realm
             List<Realm> realms = realmSearchDAO.findDescendants(
-                    profile.getTask().getSourceRealm().getFullPath(), null, Pageable.unpaged()).stream().
+                    profile.getTask().getSourceRealm().getFullPath(), null).stream().
                     filter(realm -> realm.getParent() != null).toList();
             boolean result = true;
             for (int i = 0; i < realms.size() && result; i++) {
@@ -238,8 +237,6 @@ public class PushJobDelegate
             AnyType anyType = anyTypeDAO.findById(provision.getAnyType()).
                     orElseThrow(() -> new NotFoundException("AnyType" + provision.getAnyType()));
 
-            AnyDAO<?> anyDAO = anyUtilsFactory.getInstance(anyType.getKind()).dao();
-
             dispatcher.addHandlerSupplier(provision.getAnyType(), () -> {
                 SyncopePushResultHandler handler;
                 switch (anyType.getKind()) {
@@ -261,7 +258,7 @@ public class PushJobDelegate
 
             String filter = task.getFilter(anyType.getKey()).orElse(null);
             SearchCond cond = StringUtils.isBlank(filter)
-                    ? anyDAO.getAllMatchingCond()
+                    ? searchDAO.getAllMatchingCond()
                     : SearchCondConverter.convert(searchCondVisitor, filter);
             long count = searchDAO.count(
                     profile.getTask().getSourceRealm(),

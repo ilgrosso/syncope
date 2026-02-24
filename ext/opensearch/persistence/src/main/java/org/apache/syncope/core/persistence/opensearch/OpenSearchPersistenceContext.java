@@ -74,10 +74,23 @@ public class OpenSearchPersistenceContext {
     @Bean
     public RealmSearchDAO realmSearchDAO(
             final @Lazy RealmDAO realmDAO,
+            final @Lazy PlainSchemaDAO plainSchemaDAO,
+            final @Lazy UserDAO userDAO,
+            final @Lazy GroupDAO groupDAO,
+            final EntityFactory entityFactory,
+            final PlainAttrValidationManager validator,
             final OpenSearchClient client,
             final OpenSearchProperties props) {
 
-        return new OpenSearchRealmSearchDAO(realmDAO, client, props.getIndexMaxResultWindow());
+        return new OpenSearchRealmSearchDAO(
+                realmDAO,
+                plainSchemaDAO,
+                userDAO,
+                groupDAO,
+                entityFactory,
+                validator,
+                client,
+                props.getIndexMaxResultWindow());
     }
 
     @ConditionalOnMissingBean(name = "openSearchAuditEventDAO")

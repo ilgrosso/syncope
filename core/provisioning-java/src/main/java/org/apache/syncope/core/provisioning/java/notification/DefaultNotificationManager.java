@@ -65,8 +65,8 @@ import org.apache.syncope.core.persistence.api.entity.task.TaskExec;
 import org.apache.syncope.core.persistence.api.entity.user.UMembership;
 import org.apache.syncope.core.persistence.api.entity.user.URelationship;
 import org.apache.syncope.core.persistence.api.entity.user.User;
+import org.apache.syncope.core.persistence.api.search.AnySearchCondVisitor;
 import org.apache.syncope.core.persistence.api.search.SearchCondConverter;
-import org.apache.syncope.core.persistence.api.search.SearchCondVisitor;
 import org.apache.syncope.core.provisioning.api.DerAttrHandler;
 import org.apache.syncope.core.provisioning.api.IntAttrName;
 import org.apache.syncope.core.provisioning.api.IntAttrNameParser;
@@ -120,7 +120,7 @@ public class DefaultNotificationManager implements NotificationManager {
 
     protected final IntAttrNameParser intAttrNameParser;
 
-    protected final SearchCondVisitor searchCondVisitor;
+    protected final AnySearchCondVisitor searchCondVisitor;
 
     protected final JexlTools jexlTools;
 
@@ -143,7 +143,7 @@ public class DefaultNotificationManager implements NotificationManager {
             final ConfParamOps confParamOps,
             final EntityFactory entityFactory,
             final IntAttrNameParser intAttrNameParser,
-            final SearchCondVisitor searchCondVisitor,
+            final AnySearchCondVisitor searchCondVisitor,
             final JexlTools jexlTools) {
 
         this.derSchemaDAO = derSchemaDAO;
