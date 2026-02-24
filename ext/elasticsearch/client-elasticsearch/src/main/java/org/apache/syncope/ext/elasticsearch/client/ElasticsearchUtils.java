@@ -90,6 +90,17 @@ public class ElasticsearchUtils {
         builder.put("relationshipTypes", relationshipTypes);
     }
 
+    protected void addPlainAttr(final Map<String, Object> builder, final List<PlainAttr> plainAttrs) {
+        for (PlainAttr plainAttr : plainAttrs) {
+            List<Object> values = plainAttr.getValues().stream().
+                    map(PlainAttrValue::getValue).collect(Collectors.toList());
+
+            Optional.ofNullable(plainAttr.getUniqueValue()).ifPresent(v -> values.add(v.getValue()));
+
+            builder.put(plainAttr.getSchema(), values.size() == 1 ? values.getFirst() : values);
+        }
+    }
+
     /**
      * Returns the document specialized with content from the provided any.
      *
@@ -170,14 +181,7 @@ public class ElasticsearchUtils {
             }
         }
 
-        for (PlainAttr plainAttr : any.getPlainAttrs()) {
-            List<Object> values = plainAttr.getValues().stream().
-                    map(PlainAttrValue::getValue).collect(Collectors.toList());
-
-            Optional.ofNullable(plainAttr.getUniqueValue()).ifPresent(v -> values.add(v.getValue()));
-
-            builder.put(plainAttr.getSchema(), values.size() == 1 ? values.getFirst() : values);
-        }
+        addPlainAttr(builder, any.getPlainAttrs());
 
         // add also flattened membership attributes
         if (any instanceof Groupable<?, ?, ?> groupable) {
@@ -215,6 +219,7 @@ public class ElasticsearchUtils {
         builder.put("name", realm.getName());
         builder.put("parent_id", realm.getParent() == null ? null : realm.getParent().getKey());
         builder.put("fullPath", realm.getFullPath());
+        addPlainAttr(builder, realm.getPlainAttrs());
 
         customizeDocument(builder, realm);
 
@@ -240,8 +245,6 @@ public class ElasticsearchUtils {
         return builder;
     }
 
-    protected void customizeDocument(
-            final Map<String, Object> builder,
-            final AuditEvent auditEvent) {
+    protected void customizeDocument(final Map<String, Object> builder, final AuditEvent auditEvent) {
     }
 }
