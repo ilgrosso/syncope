@@ -21,7 +21,7 @@ package org.apache.syncope.core.persistence.jpa.dao.repo;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.Query;
 import java.util.List;
-import java.util.stream.Collectors;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.syncope.core.persistence.api.dao.ExternalResourceDAO;
 import org.apache.syncope.core.persistence.api.entity.AnyUtils;
 import org.apache.syncope.core.persistence.api.entity.AnyUtilsFactory;
@@ -34,7 +34,7 @@ import org.apache.syncope.core.provisioning.api.serialization.POJOHelper;
 
 public class PGPlainSchemaRepoExtImpl extends AbstractPlainSchemaRepoExt {
 
-    protected static final String HAS_ATTRS_QUERY = "SELECT id FROM %TABLE% "
+    protected static final String HAS_ATTRS_QUERY = "SELECT COUNT(id) AS counts FROM %TABLE% "
             + "WHERE plainAttrs::jsonb @> '[{\"schema\":\"%SCHEMA%\"}]'::jsonb ";
 
     public PGPlainSchemaRepoExtImpl(
@@ -47,13 +47,7 @@ public class PGPlainSchemaRepoExtImpl extends AbstractPlainSchemaRepoExt {
 
     @Override
     public boolean hasAttrs(final PlainSchema schema) {
-        Query query = entityManager.createNativeQuery("SELECT COUNT(id) FROM ( "
-                + TABLES.stream().
-                        map(t -> HAS_ATTRS_QUERY.replace("%TABLE%", t).replace("%SCHEMA%", schema.getKey())).
-                        collect(Collectors.joining(" UNION "))
-                + ")");
-
-        return ((Number) query.getSingleResult()).intValue() > 0;
+        return hasAttrs(schema, HAS_ATTRS_QUERY, StringUtils.EMPTY);
     }
 
     @Override

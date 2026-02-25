@@ -20,7 +20,7 @@ package org.apache.syncope.core.persistence.jpa.dao.repo;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.Query;
-import java.util.stream.Collectors;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.syncope.core.persistence.api.dao.ExternalResourceDAO;
 import org.apache.syncope.core.persistence.api.dao.NotFoundException;
 import org.apache.syncope.core.persistence.api.dao.PlainSchemaDAO;
@@ -34,7 +34,8 @@ import org.apache.syncope.core.persistence.jpa.entity.JPARealm;
 
 public class OraclePlainSchemaRepoExtImpl extends AbstractPlainSchemaRepoExt {
 
-    protected static final String HAS_ATTRS_QUERY = "SELECT id FROM %TABLE%, %JSON_TABLE% ";
+    protected static final String HAS_ATTRS_QUERY = "SELECT COUNT(id) AS counts FROM %TABLE% "
+            + "WHERE JSON_EXISTS(plainAttrs, '$[*]?(@.schema == \"%SCHEMA%\")')";
 
     protected final PlainSchemaDAO plainSchemaDAO;
 
@@ -50,14 +51,7 @@ public class OraclePlainSchemaRepoExtImpl extends AbstractPlainSchemaRepoExt {
 
     @Override
     public boolean hasAttrs(final PlainSchema schema) {
-        Query query = entityManager.createNativeQuery("SELECT COUNT(id) FROM ( "
-                + TABLES.stream().
-                        map(t -> HAS_ATTRS_QUERY.replace("%TABLE%", t).
-                        replace("%JSON_TABLE%", OracleJPAAnySearchDAO.from(schema))).
-                        collect(Collectors.joining(" UNION "))
-                + ")");
-
-        return ((Number) query.getSingleResult()).intValue() > 0;
+        return hasAttrs(schema, HAS_ATTRS_QUERY, StringUtils.EMPTY);
     }
 
     @Override
@@ -75,7 +69,7 @@ public class OraclePlainSchemaRepoExtImpl extends AbstractPlainSchemaRepoExt {
         query.setParameter(1, attrValue.getValue());
         query.setParameter(2, realmKey);
 
-        return ((Number) query.getSingleResult()).intValue() > 0;
+        return ((Number) query.getSingleResult()).longValue() > 0;
     }
 
     @Override
@@ -94,6 +88,6 @@ public class OraclePlainSchemaRepoExtImpl extends AbstractPlainSchemaRepoExt {
         query.setParameter(1, attrValue.getValue());
         query.setParameter(2, anyKey);
 
-        return ((Number) query.getSingleResult()).intValue() > 0;
+        return ((Number) query.getSingleResult()).longValue() > 0;
     }
 }

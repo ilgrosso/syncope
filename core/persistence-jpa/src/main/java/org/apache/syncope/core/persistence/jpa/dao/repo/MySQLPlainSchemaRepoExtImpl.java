@@ -21,7 +21,6 @@ package org.apache.syncope.core.persistence.jpa.dao.repo;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.Query;
 import java.util.List;
-import java.util.stream.Collectors;
 import org.apache.syncope.core.persistence.api.dao.ExternalResourceDAO;
 import org.apache.syncope.core.persistence.api.entity.AnyUtils;
 import org.apache.syncope.core.persistence.api.entity.AnyUtilsFactory;
@@ -34,8 +33,10 @@ import org.apache.syncope.core.provisioning.api.serialization.POJOHelper;
 
 public class MySQLPlainSchemaRepoExtImpl extends AbstractPlainSchemaRepoExt {
 
-    protected static final String HAS_ATTRS_QUERY = "SELECT id FROM %TABLE% "
+    protected static final String HAS_ATTRS_QUERY = "SELECT COUNT(id) AS counts FROM %TABLE% "
             + "WHERE JSON_CONTAINS(plainAttrs, '[{\"schema\":\"%SCHEMA%\"}]') ";
+
+    protected static final String HAS_ATTRS_ALIAS = " AS hasAttrs";
 
     public MySQLPlainSchemaRepoExtImpl(
             final AnyUtilsFactory anyUtilsFactory,
@@ -47,13 +48,7 @@ public class MySQLPlainSchemaRepoExtImpl extends AbstractPlainSchemaRepoExt {
 
     @Override
     public boolean hasAttrs(final PlainSchema schema) {
-        Query query = entityManager.createNativeQuery("SELECT COUNT(id) FROM ( "
-                + TABLES.stream().
-                        map(t -> HAS_ATTRS_QUERY.replace("%TABLE%", t).replace("%SCHEMA%", schema.getKey())).
-                        collect(Collectors.joining(" UNION "))
-                + ") AS count");
-
-        return ((Number) query.getSingleResult()).intValue() > 0;
+        return hasAttrs(schema, HAS_ATTRS_QUERY, HAS_ATTRS_ALIAS);
     }
 
     @Override
@@ -72,7 +67,7 @@ public class MySQLPlainSchemaRepoExtImpl extends AbstractPlainSchemaRepoExt {
                 + " AND id <> ?1");
         query.setParameter(1, realmKey);
 
-        return ((Number) query.getSingleResult()).intValue() > 0;
+        return ((Number) query.getSingleResult()).longValue() > 0;
     }
 
     @Override
@@ -93,6 +88,6 @@ public class MySQLPlainSchemaRepoExtImpl extends AbstractPlainSchemaRepoExt {
                 + " AND id <> ?1");
         query.setParameter(1, anyKey);
 
-        return ((Number) query.getSingleResult()).intValue() > 0;
+        return ((Number) query.getSingleResult()).longValue() > 0;
     }
 }
