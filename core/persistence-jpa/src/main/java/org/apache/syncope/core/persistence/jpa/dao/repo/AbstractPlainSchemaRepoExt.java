@@ -19,9 +19,11 @@
 package org.apache.syncope.core.persistence.jpa.dao.repo;
 
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.Query;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import org.apache.syncope.core.persistence.api.dao.ExternalResourceDAO;
 import org.apache.syncope.core.persistence.api.entity.AnyTypeClass;
 import org.apache.syncope.core.persistence.api.entity.AnyUtilsFactory;
@@ -55,6 +57,16 @@ abstract class AbstractPlainSchemaRepoExt extends AbstractSchemaRepoExt implemen
     @Override
     public List<? extends PlainSchema> findByAnyTypeClasses(final Collection<AnyTypeClass> anyTypeClasses) {
         return findByAnyTypeClasses(anyTypeClasses, JPAPlainSchema.class.getSimpleName(), PlainSchema.class);
+    }
+
+    protected boolean hasAttrs(final PlainSchema schema, final String hasAttrsQuery, final String hasAttrsAlias) {
+        Query query = entityManager.createNativeQuery("SELECT SUM(counts) FROM ("
+                + TABLES.stream().
+                        map(t -> hasAttrsQuery.replace("%TABLE%", t).replace("%SCHEMA%", schema.getKey())).
+                        collect(Collectors.joining(" UNION ALL "))
+                + ")" + hasAttrsAlias);
+
+        return ((Number) query.getSingleResult()).longValue() > 0;
     }
 
     @Override
