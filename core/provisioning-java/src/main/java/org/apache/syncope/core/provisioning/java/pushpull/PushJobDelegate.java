@@ -47,7 +47,7 @@ import org.apache.syncope.core.persistence.api.search.SearchCondConverter;
 import org.apache.syncope.core.provisioning.api.ProvisionSorter;
 import org.apache.syncope.core.provisioning.api.job.JobExecutionContext;
 import org.apache.syncope.core.provisioning.api.job.JobExecutionException;
-import org.apache.syncope.core.provisioning.api.job.StoppableSchedTaskJobDelegate;
+import org.apache.syncope.core.provisioning.api.job.StoppableJobDelegate;
 import org.apache.syncope.core.provisioning.api.pushpull.AnyPushResultHandler;
 import org.apache.syncope.core.provisioning.api.pushpull.ProvisioningProfile;
 import org.apache.syncope.core.provisioning.api.pushpull.PushActions;
@@ -62,7 +62,7 @@ import org.springframework.data.domain.PageRequest;
 
 public class PushJobDelegate
         extends AbstractProvisioningJobDelegate<PushTask>
-        implements SyncopePushExecutor, StoppableSchedTaskJobDelegate {
+        implements SyncopePushExecutor, StoppableJobDelegate {
 
     @Autowired
     protected AnySearchDAO searchDAO;
