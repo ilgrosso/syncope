@@ -483,19 +483,19 @@ public class WAContext {
             @Qualifier("restPasswordChangeService")
             final PasswordManagementService restPasswordManagementService) {
 
-        if (ctx.getEnvironment().getProperty("cas.authn.pm.syncope.enabled", Boolean.class, Boolean.FALSE)) {
+        if (!(syncopePasswordManagementService instanceof NoOpPasswordManagementService)) {
             return syncopePasswordManagementService;
         }
 
-        if (ctx.getEnvironment().getProperty("cas.authn.pm.ldap.enabled", Boolean.class, Boolean.FALSE)) {
+        if (!(ldapPasswordManagementService instanceof NoOpPasswordManagementService)) {
             return ldapPasswordManagementService;
         }
 
-        if (ctx.getEnvironment().getProperty("cas.authn.pm.jdbc.enabled", Boolean.class, Boolean.FALSE)) {
+        if (!(jdbcPasswordManagementService instanceof NoOpPasswordManagementService)) {
             return jdbcPasswordManagementService;
         }
 
-        if (ctx.getEnvironment().getProperty("cas.authn.pm.rest.enabled", Boolean.class, Boolean.FALSE)) {
+        if (!(restPasswordManagementService instanceof NoOpPasswordManagementService)) {
             return restPasswordManagementService;
         }
 
