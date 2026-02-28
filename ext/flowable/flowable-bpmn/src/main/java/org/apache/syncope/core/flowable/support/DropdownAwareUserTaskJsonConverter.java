@@ -18,7 +18,6 @@
  */
 package org.apache.syncope.core.flowable.support;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import java.util.ArrayList;
 import java.util.List;
 import org.apache.commons.lang3.StringUtils;
@@ -30,6 +29,7 @@ import org.flowable.bpmn.model.UserTask;
 import org.flowable.editor.language.json.converter.BpmnJsonConverterUtil;
 import org.flowable.editor.language.json.converter.UserTaskJsonConverter;
 import org.flowable.editor.language.json.converter.util.JsonConverterUtil;
+import tools.jackson.databind.JsonNode;
 
 public class DropdownAwareUserTaskJsonConverter extends UserTaskJsonConverter {
 
@@ -42,10 +42,10 @@ public class DropdownAwareUserTaskJsonConverter extends UserTaskJsonConverter {
             if (propertiesArray != null) {
                 for (JsonNode formNode : propertiesArray) {
                     JsonNode formIdNode = formNode.get(PROPERTY_FORM_ID);
-                    if (formIdNode != null && StringUtils.isNotEmpty(formIdNode.asText())) {
+                    if (formIdNode != null && StringUtils.isNotEmpty(formIdNode.asString())) {
 
                         FormProperty formProperty = new FormProperty();
-                        formProperty.setId(formIdNode.asText());
+                        formProperty.setId(formIdNode.asString());
                         formProperty.setName(getValueAsString(PROPERTY_FORM_NAME, formNode));
                         formProperty.setType(getValueAsString(PROPERTY_FORM_TYPE, formNode));
                         formProperty.setExpression(getValueAsString(PROPERTY_FORM_EXPRESSION, formNode));
@@ -67,14 +67,14 @@ public class DropdownAwareUserTaskJsonConverter extends UserTaskJsonConverter {
                                             && !enumNode.get(PROPERTY_FORM_ENUM_VALUES_NAME).isNull()) {
 
                                         FormValue formValue = new FormValue();
-                                        formValue.setId(enumNode.get(PROPERTY_FORM_ENUM_VALUES_ID).asText());
-                                        formValue.setName(enumNode.get(PROPERTY_FORM_ENUM_VALUES_NAME).asText());
+                                        formValue.setId(enumNode.get(PROPERTY_FORM_ENUM_VALUES_ID).asString());
+                                        formValue.setName(enumNode.get(PROPERTY_FORM_ENUM_VALUES_NAME).asString());
                                         formValueList.add(formValue);
 
                                     } else if (enumNode.get("value") != null && !enumNode.get("value").isNull()) {
                                         FormValue formValue = new FormValue();
-                                        formValue.setId(enumNode.get("value").asText());
-                                        formValue.setName(enumNode.get("value").asText());
+                                        formValue.setId(enumNode.get("value").asString());
+                                        formValue.setName(enumNode.get("value").asString());
                                         formValueList.add(formValue);
                                     }
                                 }
