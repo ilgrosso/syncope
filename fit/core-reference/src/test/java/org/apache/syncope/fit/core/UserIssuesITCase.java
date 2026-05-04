@@ -460,7 +460,7 @@ public class UserIssuesITCase extends AbstractITCase {
         assertTrue(userTO.getResources().contains(RESOURCE_NAME_TESTDB));
         assertTrue(userTO.getResources().contains(RESOURCE_NAME_TESTDB2));
 
-        String pwdOnSyncope = userTO.getPassword();
+        String pwdOnSyncope = getPassword(userTO.getKey());
 
         ConnObject userOnDb = RESOURCE_SERVICE.readConnObject(
                 RESOURCE_NAME_TESTDB, AnyTypeKind.USER.name(), userTO.getKey());
@@ -493,7 +493,7 @@ public class UserIssuesITCase extends AbstractITCase {
         assertEquals(RESOURCE_NAME_TESTDB, result.getPropagationStatuses().getFirst().getResource());
 
         // 3b. verify that password hasn't changed on Syncope
-        assertEquals(pwdOnSyncope, userTO.getPassword());
+        assertEquals(pwdOnSyncope, getPassword(userTO.getKey()));
 
         // 3c. verify that password *has* changed on testdb
         userOnDb = RESOURCE_SERVICE.readConnObject(RESOURCE_NAME_TESTDB, AnyTypeKind.USER.name(), userTO.getKey());
@@ -1057,7 +1057,8 @@ public class UserIssuesITCase extends AbstractITCase {
         userCR.setStorePassword(false);
 
         UserTO userTO = createUser(userCR).getEntity();
-        assertNull(userTO.getPassword());
+        assertNotNull(userTO);
+        assertNull(getPassword(userTO.getKey()));
 
         // 2. create existing user on csv and check that password on Syncope is null and that password on resource
         // doesn't change
@@ -1084,7 +1085,7 @@ public class UserIssuesITCase extends AbstractITCase {
         assertEquals(
                 "password0",
                 connObject.getAttr(OperationalAttributes.PASSWORD_NAME).orElseThrow().getValues().getFirst());
-        assertNull(userTO.getPassword());
+        assertNull(getPassword(userTO.getKey()));
 
         // 3. create user with not null password and propagate onto resource-csv, specify not to save password on
         // Syncope local storage
@@ -1100,11 +1101,11 @@ public class UserIssuesITCase extends AbstractITCase {
                 RESOURCE_SERVICE.readConnObject(RESOURCE_NAME_CSV, AnyTypeKind.USER.name(), userTO.getKey());
         assertNotNull(connObject);
 
-        // check if password has been propagated and that saved userTO's password is null
+        // check if password has been propagated and that saved user's password is null
         assertEquals(
                 "passwordTESTNULL1",
                 connObject.getAttr(OperationalAttributes.PASSWORD_NAME).orElseThrow().getValues().getFirst());
-        assertNull(userTO.getPassword());
+        assertNull(getPassword(userTO.getKey()));
 
         // 4. create user and propagate password on resource-csv and on Syncope local storage
         userCR = UserITCase.getUniqueSample("syncope391@syncope.apache.org");

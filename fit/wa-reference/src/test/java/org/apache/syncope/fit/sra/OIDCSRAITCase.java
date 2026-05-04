@@ -25,7 +25,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.nimbusds.jwt.SignedJWT;
 import jakarta.ws.rs.core.Form;
 import jakarta.ws.rs.core.Response;
@@ -139,7 +138,7 @@ class OIDCSRAITCase extends AbstractOIDCITCase {
     }
 
     @Test
-    public void clientCredentials() throws JsonProcessingException, ParseException {
+    public void clientCredentials() throws ParseException {
         WebClient webclient = WebClient.create(WA_ADDRESS + "/oidc/oidcAccessToken");
         Form form = new Form().
                 param(OAuth20Constants.GRANT_TYPE, OIDCGrantType.client_credentials.getExternalForm()).

@@ -33,6 +33,7 @@ import jakarta.ws.rs.ForbiddenException;
 import jakarta.ws.rs.core.GenericType;
 import jakarta.ws.rs.core.Response;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
@@ -362,8 +363,9 @@ public class UserSelfITCase extends AbstractITCase {
             checkNotification(email, "e00945b5-1184-4d43-8e45-4318a8dcdfd4", "Password Reset request");
         }
 
-        String token = await().atMost(MAX_WAIT_SECONDS, TimeUnit.SECONDS).pollInterval(1, TimeUnit.SECONDS).
-                until(() -> USER_SERVICE.read(read.getKey()).getToken(), StringUtils::isNotBlank);
+        String token = await().atMost(MAX_WAIT_SECONDS, TimeUnit.SECONDS).pollInterval(1, TimeUnit.SECONDS).until(
+                () -> Optional.ofNullable(getToken(read.getKey()).get("token")).map(Object::toString).orElse(null),
+                StringUtils::isNotBlank);
 
         // 5. confirm password reset
         try {
@@ -380,8 +382,8 @@ public class UserSelfITCase extends AbstractITCase {
         }
 
         // 6. verify that password was reset and token removed
-        authClient = CLIENT_FACTORY.create(user.getUsername(), "newPassword123");
-        assertNull(authClient.self().user().getToken());
+        CLIENT_FACTORY.create(user.getUsername(), "newPassword123");
+        assertNull(Optional.ofNullable(getToken(read.getKey()).get("token")).map(Object::toString).orElse(null));
 
         // 7. verify that password was changed on external resource
         String newPwdOnResource = queryForObject(jdbcTemplate,
@@ -408,7 +410,7 @@ public class UserSelfITCase extends AbstractITCase {
         ANONYMOUS_CLIENT.getService(UserSelfService.class).requestPasswordReset(user.getUsername(), null);
 
         // 4. get token (normally sent via e-mail, now reading as admin)
-        String token = USER_SERVICE.read(read.getKey()).getToken();
+        String token = Optional.ofNullable(getToken(read.getKey()).get("token")).map(Object::toString).orElse(null);
         assertNotNull(token);
 
         // 5. confirm password reset
@@ -422,10 +424,8 @@ public class UserSelfITCase extends AbstractITCase {
         ANONYMOUS_CLIENT.getService(UserSelfService.class).confirmPasswordReset(token, "newPassword123");
 
         // 6. verify that password was reset and token removed
-        authClient = CLIENT_FACTORY.create(user.getUsername(), "newPassword123");
-        read = authClient.self().user();
-        assertNotNull(read);
-        assertNull(read.getToken());
+        CLIENT_FACTORY.create(user.getUsername(), "newPassword123");
+        assertNull(Optional.ofNullable(getToken(read.getKey()).get("token")).map(Object::toString).orElse(null));
 
         // 7. re-enable security question for password reset
         confParamOps.set(SyncopeConstants.MASTER_DOMAIN, StandardConfParams.PASSWORD_RESET_SECURITY_QUESTION, true);

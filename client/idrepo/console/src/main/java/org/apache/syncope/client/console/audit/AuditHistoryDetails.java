@@ -346,7 +346,6 @@ public abstract class AuditHistoryDetails<T extends Serializable> extends Panel 
                     readValue(content);
             if (entity instanceof UserTO userTO) {
                 userTO.setPassword(null);
-                userTO.setSecurityAnswer(null);
             }
 
             return Model.of(MAPPER.writerWithDefaultPrettyPrinter().writeValueAsString(entity));
