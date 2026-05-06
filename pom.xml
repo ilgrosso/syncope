@@ -451,7 +451,7 @@ under the License.
 
     <disruptor.version>4.0.0</disruptor.version>
 
-    <elasticsearch.version>9.3.3</elasticsearch.version>
+    <elasticsearch.version>9.4.0</elasticsearch.version>
     <opensearch.version>3.6.0</opensearch.version>
     <opensearch-java.version>3.8.0</opensearch-java.version>
 
@@ -648,7 +648,7 @@ under the License.
       <dependency>
         <groupId>co.elastic.clients</groupId>
         <artifactId>elasticsearch-java</artifactId>
-        <version>9.4.0</version>
+        <version>${elasticsearch.version}</version>
       </dependency>
 
       <dependency>
